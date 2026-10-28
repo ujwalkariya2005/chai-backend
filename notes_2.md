@@ -4,10 +4,14 @@ we used `"type": "module"` in `package.json file` in order to maintain consisten
 `dependency`:
 - Definition: An external software package, library, or module that a project requires to function properly.
 - Analogy: Like needing a specific ingredient from the store to complete a recipe; without it, the project cannot run.
+- how to install? : `npm i <package-name>/<dependency-name>`
+e.g.: `npm i mongoose express dotenv`
 
 `dev dependency`:
 - Definition: An external package required exclusively during the development, testing, or building phases (e.g., testing frameworks, linters, build tools) and excluded from the production environment.
 - Analogy: Like construction tools used to build a house that are removed before occupants move in.
+- how to install? : `npm i -D <package-name>/<dependency-name>`
+e.g.: `npm i -D nodemon`
 
 ➡️ "scripts": {
     "dev": "nodemon src/index.js"
