@@ -9,8 +9,13 @@ we used `"type": "module"` in `package.json file` in order to maintain consisten
 - Definition: An external package required exclusively during the development, testing, or building phases (e.g., testing frameworks, linters, build tools) and excluded from the production environment.
 - Analogy: Like construction tools used to build a house that are removed before occupants move in.
 
-"scripts": {
+➡️ "scripts": {
     "dev": "nodemon src/index.js"
-}"
+    }"
 - Purpose: Automates server restarts and provides a short command (`npm run dev`) to launch the application from `src/index.js`.
+
+➡️ commands:
+- `ls`: Lists files and directories in the current location.
+- `cd`: Changes the current working directory.
+- `mkdir`: Creates a new directory.
 
