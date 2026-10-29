@@ -23,6 +23,21 @@ import connectDB from "./db/index.js"
 // invokes (or executes or triggers) the function to establish the database connection
 connectDB()
 
+.then(() => { // handles successful db connection & starts express server
+
+    // starts express web server on configured port or fallback port 8000
+    app.listen(process.env.PORT || 8000) 
+
+    // logs success message confirming server is running
+    console.log(`server is running at port: ${process.env.PORT}`) 
+}) // closes then block
+
+.catch((error) => { // catches & handles any db connection failures
+
+    // logs connection failure message to the console
+    console.log("mongodb connection failed", err)
+}) // closes catch block
+
 // imports mongoose library to connect and interact with mongodb database
 import mongoose from "mongoose"
 
