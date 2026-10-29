@@ -30,8 +30,8 @@ Explanation: "Our database usually lives on a remote cloud server in another loc
 Explanation: "Network issues, bad passwords, or server drops can cause failures. We always wrap our connection code in a `try...catch` block to handle errors gracefully and prevent our app from crashing."
 
 Meaning of Key Terms:
-1. `async` (Asynchronous): Tells JS that a function will handle tasks that take time (like talking to a database) so it doesn't freeze/block the rest of the app.
-2. `await`: Pauses the execution inside an async function until the slow task (like a database response) finishes.
+1. `async` (Asynchronous): Tells JS that a function will handle tasks that take time (like talking to a database) so it doesn't freeze/block the rest of the app. 
+2. `await`: Pauses the execution inside an *async function* until the slow task (like a database response) finishes.
 3. `try`: A block of code where you *attempt* to run risky operations (like connecting to a remote database).
 4. `catch`: A backup block that catches the error immediately if something goes wrong inside the `try` block, preventing a server crash.
 5. `resolve`: A promise method used to say: *"The task was successful, here is the data."*
