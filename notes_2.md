@@ -88,3 +88,5 @@ Key Things to Remember about `IIFEs`:
 1. Semicolon `;` at the start: Prevents JavaScript parsing errors (Automatic Semicolon Insertion bugs) if the previous line lacks a semicolon.
 2. Execution parentheses `()` at the end: Immediately invokes/triggers the function upon definition.
 
+Note:
+Whenever you are setting middleware or config settings, you are supposed to use `app.use()`.

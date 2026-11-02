@@ -7,6 +7,10 @@ however this breaks the consistency we have maintained using modular js type in 
 solution: below
 */
 
+/* ℹ️ approach 2: mdoular separation approach or dedicated db module
+take a file separately in any folder (db, connection) and export from there
+import it into index.js file and then execute it */
+
 // imports dotenv library to load hidden environment variables
 import dotenv from "dotenv" // using this won't cause a problem
 
