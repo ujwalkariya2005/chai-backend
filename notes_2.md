@@ -151,3 +151,10 @@ const myCar = new Car("Toyota", "red") // constructor runs here
 console.log(myCar.brand) // output: Toyota
 console.log(myCar.color) // output: red
 
+`Note`: We have created the following files in `utils folder` of our project because it standardizes and professionalizes the backend development process.
+
+*asynchronous* (programming which allows tasks to run in the background without blocking the rest of the application; instead of waiting for a long-running process like db query to finish, the program continues to execute other codes and handles the reuslts once it's ready)
+
+1. `asyncHandler.js`: Database operations are *asynchronous* and require `try-catch` blocks to handle errors. This utility acts as a wrapper function (a higher-order function). Instead of writing repetitive `try-catch` logic in every controller, you simply wrap your function in this utility. It makes your code cleaner and prevents bugs.
+2. `apiError.js`: This defines a custom class that extends the standard JavaScript Error class. It allows you to create structured error objects. By using this, every error sent to the client includes essential information like a statusCode, message, and a success: false flag in a uniform format.
+3. `apiResponse.js`: Similar to the error handler, this class ensures that every successful response follows the exact same structure. It bundles the `statusCode`, `data`, and `message` into a consistent format with a `success: true` flag. This makes it much easier for the frontend to reliably consume data from your API.
