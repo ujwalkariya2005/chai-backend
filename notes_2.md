@@ -96,6 +96,24 @@ What is `Middleware`?
 - *Simple Analogy*: Think of middleware like a security checkpoint or airport customs guard. When you want to enter a building or country (the route handler), you first have to pass through security. Security checks your bag, takes away anything dangerous, and only lets you through if everything looks good.
 - *Simple Definition*: `Middleware` is a function that sits in the middle of the request-response cycle. It intercepts incoming client requests before they reach your route code, allowing you to inspect, modify, or block them.
 e.g.: `app.use(express.json());`
+- Why you need it: We put `app.use()` at the top of our `app.js` because it runs for every single request coming into your server (e.g., parsing JSON, logging requests, enabling CORS).
+Express cannot read raw JSON strings by default. `express.json()` is a built-in middleware that intercepts the request, parses that raw JSON string into a usable JavaScript object, and attaches it to `req.body` so your controllers can actually read it.
+
+> What are `Mongoose Middlewares (Hooks)`?
+ℹ️ Convention: Call Mongoose Middlewares -> Hooks ONLY
+- Calling Mongoose hooks "middleware" is technically correct because they intercept the database operation lifecycle, but calling them "hooks" helps developers instantly know you are talking about Mongoose schemas rather than Express servers.
+
+`Mongoose Middlewares (Hooks)` are functions that allow you to run custom code automatically before or after a specific database operation happens (such as saving, updating, or deleting a document).
+Operates at the Database layer. It sits right before or after a database action (like saving a user model).
+
+The Two Main Types of Hooks in Mongoose:
+1. `pre` hooks: Run before an action executes (e.g., *before* a user document is saved to the database).
+2. `post` hooks: Run after an action finishes executing (e.g., *after* a user is successfully deleted, you might want to log it or delete their uploaded files). 
+
+- `next` keyword importance:
+It tells Express to pass control to the next middleware function in the request-response stack.
+If you call next(): Express moves forward to the next middleware, route handler, or error handler.
+e.g.: `next` is a callback function passed as the third argument to middleware functions `((req, res, next) => {})`. We performed this in `asyncHandler.js` file, check it. 
 
 > Note: 
 `Intercept` - To stop something while it is on its way from one place to another, before it reaches its final destination.
@@ -158,3 +176,27 @@ console.log(myCar.color) // output: red
 1. `asyncHandler.js`: Database operations are *asynchronous* and require `try-catch` blocks to handle errors. This utility acts as a wrapper function (a higher-order function). Instead of writing repetitive `try-catch` logic in every controller, you simply wrap your function in this utility. It makes your code cleaner and prevents bugs.
 2. `apiError.js`: This defines a custom class that extends the standard JavaScript Error class. It allows you to create structured error objects. By using this, every error sent to the client includes essential information like a statusCode, message, and a success: false flag in a uniform format.
 3. `apiResponse.js`: Similar to the error handler, this class ensures that every successful response follows the exact same structure. It bundles the `statusCode`, `data`, and `message` into a consistent format with a `success: true` flag. This makes it much easier for the frontend to reliably consume data from your API.
+
+`Note`:
+> npm i mongoose-aggregate-paginate-v2
+- Aggregate (Aggregation)
+➡️ What it means: Asking MongoDB to process your data through a pipeline of multiple steps (like a factory assembly line).
+➡️ Example: Instead of just grabbing a raw list of users, an aggregation query might:
+1. $match (filter out inactive users)
+2. $lookup (join the user collection with their uploaded videos)
+3. $sort (order them by subscriber count)
+
+- Paginate (Pagination)
+➡️ What it means: Splitting a massive list of results into numbered pages (or chunks) so your app doesn't crash trying to load millions of records at once.
+➡️ Example: Instead of showing all 5,000 videos on a single screen, you split them into pages of 10 videos per page (page: 1, limit: 10).
+
+Putting Them Together:
+`Aggregate pagination` splits the results of a complex MongoDB aggregation pipeline (multi-stage queries involving filtering, joining collections, or computing stats) into manageable, numbered pages (e.g., page 1, page 2) while automatically calculating total document counts and page navigation metadata.
+
+> bcrypt (Password Hashing Library)
+- What it is: A library designed to securely *hash* (transform input data like a password into a fixed length, unreadbale string that can't be reversed back to the original text) and compare passwords before saving them to your database. 
+- Why it’s used: It converts plaintext passwords into unreadable strings with a random "salt" (random string of data added to a password before it is hashed) to protect against brute-force attacks.
+
+> jwt / jsonwebtoken (Authentication Token)
+- What it is: A standard (JSON Web Token) used to securely transmit information between the client and the server as a compact, signed object.
+- Why it’s used: HTTP is a "stateless" protocol, meaning the server forgets who a user is after every request. When a user successfully logs in, your server creates a JWT (signed with a secret key) and sends it back to the client. For all future requests (like uploading a video or viewing a profile), the client sends that token back, proving they are logged in without needing to send their username and password over and over again.
