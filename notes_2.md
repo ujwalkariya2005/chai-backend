@@ -92,9 +92,12 @@ Key Things to Remember about `IIFEs`:
 - Whenever you are setting middleware or config settings, you are supposed to use `app.use()`.
 - `multer`: A third-part package used to configure file uploading.
 
-What is `Middleware`?
+> What is `Express Middleware`?
+ℹ️ Convention: Call Express Middleware -> Middleware ONLY
 - *Simple Analogy*: Think of middleware like a security checkpoint or airport customs guard. When you want to enter a building or country (the route handler), you first have to pass through security. Security checks your bag, takes away anything dangerous, and only lets you through if everything looks good.
-- *Simple Definition*: `Middleware` is a function that sits in the middle of the request-response cycle. It intercepts incoming client requests before they reach your route code, allowing you to inspect, modify, or block them.
+- *Simple Definition*: `Express Middleware` is a function that sits in the middle of the request-response cycle. It intercepts incoming client requests before they reach your route code, allowing you to inspect, modify, or block them.
+Operates at the HTTP layer. It sits between the client request and your route controller.
+
 e.g.: `app.use(express.json());`
 - Why you need it: We put `app.use()` at the top of our `app.js` because it runs for every single request coming into your server (e.g., parsing JSON, logging requests, enabling CORS).
 Express cannot read raw JSON strings by default. `express.json()` is a built-in middleware that intercepts the request, parses that raw JSON string into a usable JavaScript object, and attaches it to `req.body` so your controllers can actually read it.
@@ -119,9 +122,8 @@ e.g.: `next` is a callback function passed as the third argument to middleware f
 `Intercept` - To stop something while it is on its way from one place to another, before it reaches its final destination.
 
 > what is `cors`?
-`cors` stands for `cross-origin resource sharing`. it is a security feature implemented by web browsers that controls how different websites or servers can request resources from each other.
-*OR*
-`CORS (Cross-Origin Resource Sharing)` is a browser security mechanism that allows a server to specify which external domains are permitted to access its resources and APIs.
+- `cors` stands for `cross-origin resource sharing`. it is a security feature implemented by web browsers that controls how different websites or servers can request resources from each other.
+- `CORS (Cross-Origin Resource Sharing)` is a browser security mechanism that allows a server to specify which external domains are permitted to access its resources and APIs.
 
 - why is it needed?
 ans: by default, web browsers use a rule called the "same-origin policy". this rule blocks a frontend application running on one port or domain (like `http://localhost:3000`) from making api requests to a backend server running on a different port or domain (like `http://localhost:8000`).
@@ -178,13 +180,13 @@ console.log(myCar.color) // output: red
 3. `apiResponse.js`: Similar to the error handler, this class ensures that every successful response follows the exact same structure. It bundles the `statusCode`, `data`, and `message` into a consistent format with a `success: true` flag. This makes it much easier for the frontend to reliably consume data from your API.
 
 `Note`:
-> npm i mongoose-aggregate-paginate-v2
+> mongoose-aggregate-paginate-v2
 - Aggregate (Aggregation)
 ➡️ What it means: Asking MongoDB to process your data through a pipeline of multiple steps (like a factory assembly line).
 ➡️ Example: Instead of just grabbing a raw list of users, an aggregation query might:
-1. $match (filter out inactive users)
-2. $lookup (join the user collection with their uploaded videos)
-3. $sort (order them by subscriber count)
+1. `$match` (filter out inactive users)
+2. `$lookup` (join the user collection with their uploaded videos)
+3. `$sort` (order them by subscriber count)
 
 - Paginate (Pagination)
 ➡️ What it means: Splitting a massive list of results into numbered pages (or chunks) so your app doesn't crash trying to load millions of records at once.
@@ -200,3 +202,4 @@ Putting Them Together:
 > jwt / jsonwebtoken (Authentication Token)
 - What it is: A standard (JSON Web Token) used to securely transmit information between the client and the server as a compact, signed object.
 - Why it’s used: HTTP is a "stateless" protocol, meaning the server forgets who a user is after every request. When a user successfully logs in, your server creates a JWT (signed with a secret key) and sends it back to the client. For all future requests (like uploading a video or viewing a profile), the client sends that token back, proving they are logged in without needing to send their username and password over and over again.
+
