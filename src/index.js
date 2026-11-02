@@ -87,8 +87,4 @@ const app = express ()
     } // closes catch block
 }) // immediately executes the wrapper async func the moment the file loads
 
-*/
-
-/* ℹ️ approach 2: mdoular separation approach or dedicated db module
-take a file separately in any folder (db, connection) and export from there
-import it into index.js file and then execute it */
+*/ 

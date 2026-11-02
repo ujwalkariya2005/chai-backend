@@ -88,5 +88,66 @@ Key Things to Remember about `IIFEs`:
 1. Semicolon `;` at the start: Prevents JavaScript parsing errors (Automatic Semicolon Insertion bugs) if the previous line lacks a semicolon.
 2. Execution parentheses `()` at the end: Immediately invokes/triggers the function upon definition.
 
-Note:
-Whenever you are setting middleware or config settings, you are supposed to use `app.use()`.
+`Note`:
+- Whenever you are setting middleware or config settings, you are supposed to use `app.use()`.
+- `multer`: A third-part package used to configure file uploading.
+
+What is `Middleware`?
+- *Simple Analogy*: Think of middleware like a security checkpoint or airport customs guard. When you want to enter a building or country (the route handler), you first have to pass through security. Security checks your bag, takes away anything dangerous, and only lets you through if everything looks good.
+- *Simple Definition*: `Middleware` is a function that sits in the middle of the request-response cycle. It intercepts incoming client requests before they reach your route code, allowing you to inspect, modify, or block them.
+e.g.: `app.use(express.json());`
+
+> Note: 
+`Intercept` - To stop something while it is on its way from one place to another, before it reaches its final destination.
+
+> what is `cors`?
+`cors` stands for `cross-origin resource sharing`. it is a security feature implemented by web browsers that controls how different websites or servers can request resources from each other.
+*OR*
+`CORS (Cross-Origin Resource Sharing)` is a browser security mechanism that allows a server to specify which external domains are permitted to access its resources and APIs.
+
+- why is it needed?
+ans: by default, web browsers use a rule called the "same-origin policy". this rule blocks a frontend application running on one port or domain (like `http://localhost:3000`) from making api requests to a backend server running on a different port or domain (like `http://localhost:8000`).
+
+- how `cors` works?
+ans: `cors` acts like an official permission slip. when you configure cors on your express backend, you give the browser a list of trusted frontend origins. it tells the browser:
+"hey, i trust this specific website or client, so it is safe to let them access my server data."
+
+> What is a `Higher-Order Function`?
+A `higher-order function` is a function that does at least one of the following:
+1. Takes one or more functions as arguments (parameters).
+2. Returns a function as its result.
+In JavaScript, functions are treated as "first-class citizens," meaning they can be treated like regular variables-passed around, stored, and returned.
+
+ex 1: 
+const runTask = (taskFunction) => { // higher-order function that accepts a function
+    console.log("starting task...")
+    taskFunction() // executes the passed function
+}
+const printHello = () => { // simple function to print text
+    console.log("hello!")
+}
+runTask(printHello) // passes printHello into runTask
+
+ex 2: 
+const createPrinter = () => { // higher-order function that returns a function
+    return () => {
+        console.log("printing from inside!")
+    }
+}
+const myPrinter = createPrinter() // calls outer function, stores returned function in a variable
+myPrinter() // executes the returned inner function
+
+> What is a `Constructor`?
+A `constructor` is a special method inside a class that automatically runs the exact moment a new object is created from that class.
+e.g.: 
+class Car {
+    constructor(brand, color) { // runs automatically when *new Car()* is called
+        this.brand = brand // sets the object's brand property
+        this.color = color // sets the object's color property
+    }
+}
+
+const myCar = new Car("Toyota", "red") // constructor runs here
+console.log(myCar.brand) // output: Toyota
+console.log(myCar.color) // output: red
+
