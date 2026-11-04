@@ -188,7 +188,7 @@ console.log(myCar.color) // output: red
 2. `$lookup` (join the user collection with their uploaded videos)
 3. `$sort` (order them by subscriber count)
 
-- Paginate (Pagination)
+- `Paginate (Pagination)`:
 ➡️ What it means: Splitting a massive list of results into numbered pages (or chunks) so your app doesn't crash trying to load millions of records at once.
 ➡️ Example: Instead of showing all 5,000 videos on a single screen, you split them into pages of 10 videos per page (page: 1, limit: 10).
 
@@ -202,4 +202,38 @@ Putting Them Together:
 > jwt / jsonwebtoken (Authentication Token)
 - What it is: A standard (JSON Web Token) used to securely transmit information between the client and the server as a compact, signed object.
 - Why it’s used: HTTP is a "stateless" protocol, meaning the server forgets who a user is after every request. When a user successfully logs in, your server creates a JWT (signed with a secret key) and sends it back to the client. For all future requests (like uploading a video or viewing a profile), the client sends that token back, proving they are logged in without needing to send their username and password over and over again.
+
+> Note:
+- `Cloudinary`: A cloud-based service for uploading, storing, managing, and optimizing media assets like images and videos.
+
+- `Multer`: an Express Middleware
+1. *What it is*: A popular Node.js middleware designed specifically for handling multipart/form-data (the format used when users upload files through a form).
+2. *Why it’s used*: Express cannot handle file uploads by default (`express.json()` only handles text/JSON). When a user uploads an avatar or a video, Multer intercepts the request, grabs the file, temporarily stores it on your server's disk (or in memory), and makes it accessible via `req.file` or `req.files` so your controller can process or forward it to Cloudinary.
+
+- `express-fileupload`: an Express Middleware
+1. *What it is*: An alternative Express middleware used for handling file uploads, serving the exact same core purpose as Multer.
+2. *Why it’s used*: Like Multer, it parses uploaded files from incoming requests and attaches them to `req.files`. Some developers prefer it because its configuration and syntax are often considered simpler and more "plug-and-play" than Multer, though Multer offers more advanced control over storage destinations and file filtering.
+
+> IMP NOTE:
+1. `parsing`: `Parsing` is the process of taking raw, unstructured data (like a raw string of text coming over the internet) and converting it into a structured, usable format (like a JavaScript object) that your code can easily read and manipulate.
+In Express, when a browser sends JSON text like `{"email":"test@test.com"}`, parsing turns that text into an actual JavaScript object (`{ email: "test@test.com" }`) so you can type `req.body.email`.
+
+2. `req.file` vs `req.files`
+When working with file upload middleware (like Multer), uploaded files are attached directly to the `request` object so your controller can access them:
+- `req.file` (Singular):
+    Used when a user uploads a single file.
+    It returns a single JavaScript object containing all details about that file (e.g., `req.file.path`, `req.file.originalname`, `req.file.size`).
+    Example: Changing a profile picture (avatar).
+- `req.files` (Plural):
+    Used when a user uploads multiple files at once.
+    It returns either an array of file objects or an object containing arrays grouped by field name.
+    Example: Uploading both an avatar and a cover image in the same form, or uploading an album of photos.
+
+3. What `express.json()` handling text/JSON means: It reads incoming HTTP requests with a `Content-Type` header of `application/JSON` (containing text strings formatted as JSON) and converts them into JavaScript objects on `req.body`. It cannot process binary data, non-JSON text, or multipart form-data (file uploads).
+
+4. `fs` (File System):
+- A built-in Node.js core module that allows your application to interact with your operating system's file system (allowing you to read, write, update, and delete files directly on your server's disk).
+- Delete files (fs.unlink or fs.unlinkSync).
+- Why it matters in your project:
+When using a tool like `multer` to handle uploads, files are often saved to a temporary local folder on your server first. Once your server successfully uploads that file to Cloudinary, you use the `fs` module to delete the temporary file from your local machine so your server's storage doesn't fill up with junk data.
 
