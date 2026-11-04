@@ -291,14 +291,11 @@ Putting Them Together:
   - Note: In production code, using `file.originalname` directly can sometimes cause issues if two different users upload a file with the exact same name (e.g., `image.png`), leading to overwrites. Often, developers modify this or append a timestamp/random string, but keeping it helps you inspect the file type or extension.
 
 The Difference Between the Two:
-
 1. `file.fieldname`:
-
 - Tells you which HTML form field the file came from (e.g., if your frontend form has <input type="file" name="avatar" />, fieldname will be `"avatar"`).
 - Use case: Useful when your backend route handles multiple different files at once (like an avatar and a cover image) and you need to check which field is currently being processed.
 
 2. `file.originalname`:
-
 - Tells you the actual name of the file on the user's computer (e.g., `my_vacation_video`.mp4 or `profile-pic.png`).
 - Use case: Useful if you want to log what the user named their file, display their original filename in the UI, or use it for reference before uploading it to the cloud.
 
@@ -309,10 +306,9 @@ Because both properties live on the same file object (`req.file`), swapping one 
 
 What You Actually Need for Cloudinary?
 Neither `fieldname` nor `originalname` is what actually gets uploaded to Cloudinary.
-To upload a file to Cloudinary, your controller passes `file.path` (which points to the temporary disk location created by Multer, like ./public/temp/my_video.mp4) into your `uploadOnCloudinary` function (_check cloudinary.js in utils_).
+To upload a file to Cloudinary, your controller passes `file.path` (which points to the temporary disk location created by Multer, like `./public/temp/my_vacation_video.mp4`) into your `uploadOnCloudinary` function (*check cloudinary.js in utils*).
 
 Summary:
-
 - Use `file.path` to send the file to Cloudinary.
 - Use `file.originalname` if you need to know or log the user's original file name.
 - Use `file.fieldname` if you need to check which form input field submitted the file.
