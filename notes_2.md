@@ -2,14 +2,12 @@ we used `"type": "module"` in `package.json file` in order to maintain consisten
 
 > dependency vs. dev dependency:
 > `dependency`:
-
 - Definition: An external software package, library, or module that a project requires to function properly.
 - Analogy: Like needing a specific ingredient from the store to complete a recipe; without it, the project cannot run.
 - how to install? : `npm i <package-name>/<dependency-name>`
   e.g.: `npm i mongoose express dotenv`
 
 `dev dependency`:
-
 - Definition: An external package required exclusively during the development, testing, or building phases (e.g., testing frameworks, linters, build tools) and excluded from the production environment.
 - Analogy: Like construction tools used to build a house that are removed before occupants move in.
 - how to install? : `npm i -D <package-name>/<dependency-name>`
@@ -18,62 +16,51 @@ we used `"type": "module"` in `package.json file` in order to maintain consisten
 ➡️ "scripts": {
 "dev": "nodemon src/index.js"
 }"
-
 - Purpose: Automates server restarts and provides a short command (`npm run dev`) to launch the application from `src/index.js`.
 
 ➡️ commands:
-
 - `ls`: Lists files and directories in the current location.
 - `cd`: Changes the current working directory.
 - `mkdir`: Creates a new directory.
 
 > database
 > What is a `Database`?
-
 - Simple Analogy: Think of a database like a massive, highly organized filing cabinet or a digital warehouse. Instead of keeping your important files scattered all over your desk (or losing them when your app restarts), you store them neatly in labeled drawers so you can find, update, or delete them instantly.
 - Simple Definition: A `database` is an organized electronic system that allows applications to securely store, retrieve, and manage persistent data (data stored on a permanent storage like hard drive) so information is never lost when the app restarts.
 
 What is `MongoDB`?
-
 - Simple Analogy: Think of `MongoDB` like a filing cabinet full of flexible folders (documents) instead of rigid, old-fashioned spreadsheet tables with strict rows and columns. If one note needs a title and description, and another note needs a title, description, and a color tag, MongoDB accepts them without complaining.
   Simply, it easily adapts to store whatever custom data fields your app throws at it.
 - Simple Definition: `MongoDB` is a popular `NoSQL` (`Not Only SQL`) database that stores data in flexible, JSON-like documents (called _BSON_) rather than traditional tables and rows.
 
 Key Points to Remember:
-
 1. Persistence: Unlike your in-memory array (`const notes = []`), which wipes clean every time your server restarts, a database saves data permanently on your disk.
 2. NoSQL Flexibility: MongoDB doesn't force you to follow a rigid table structure, making it very fast and easy to change data fields as your app grows.
 
 What is a `Cluster`?
-
 - Simple Analogy: Think of a single-lane checkout counter at a grocery store vs. multiple cashiers working at different counters behind the exact same entrance door. Instead of one cashier getting overwhelmed by a long line of customers, multiple cashiers handle people in parallel.
 - Simple Definition: A `cluster` is a group of multiple running instances of your Node.js server (called _workers_) that all share a single server port to handle incoming traffic together.
 
 > Note: `Instance`
-
 - Simple Analogy: Think of a popular restaurant that gets too busy for just one front door. Instead of opening a new location across town, they open three identical copies of the restaurant right next to each other, sharing the exact same street address and front door. Each copy is an `instance`.
 - Simple Definition: An `instance` is an independent, running copy of your Node.js application running in computer memory.
 
 In the Context of _Clustering_:
 When we say a cluster runs "multiple instances (workers)" of your server:
-
 1. Your computer spins up `Copy #1` of your Node app.
 2. It spins up `Copy #2`, `Copy #3`, and `Copy #4` right alongside it.
 3. Even though there are 4 separate copies running in the background, all of them listen to port 4000 together, sharing the workload so your app can handle heavy traffic without slowing down.
 
 Key Points to Remember:
-
 1. Multi-Core Utilization: Modern computers have multiple CPU cores (e.g., 4, 8, or 16 cores). Clustering lets your Node app use all of them instead of overloading just one core.
 2. Traffic Control: The built-in cluster module automatically distributes incoming requests among the different worker processes so no single one gets overwhelmed.
 3. Crash Protection: If one worker process crashes or fails, a fresh replacement starts up instantly so your app stays online.
 
 What is a `MongoDB Connection String/URI (Uniform Resource Identifier)`?
-
 - Simple Analogy: It acts like a complete address and set of login credentials for your database. It tells your Node.js application where the database lives, how to connect to it, and who is trying to log in.
 - Simple Definition: A Connection String/URI (Uniform Resource Identifier) is a standardized URL that contains all the necessary credentials and network details for your application to securely connect to a MongoDB database.
 
 Breaking Down The Connection String:
-
 > mongodb+srv://ujwal:ujwal123@cluster0.nnpq6bq.mongodb.net/
 
 1. `mongodb+srv://`: The secure protocol used to connect to a cloud-based MongoDB cluster.
@@ -82,14 +69,12 @@ Breaking Down The Connection String:
 4. `/`: The specific database name at the end (currently empty, meaning it connects to the default root). (we won't use it though since it can cause problems in the future, for more info check _.env folder_)
 
 > Practices for Database Connection
-
 - The Database is Remote (Use `async/await`)
   Explanation: "Our database usually lives on a remote cloud server in another location, so connecting to it takes time. Because it doesn't happen instantly, we use `async/await` to wait for the connection safely without blocking our app."
 - Things Can Go Wrong (Use `try...catch` or `Promises`)
   Explanation: "Network issues, bad passwords, or server drops can cause failures. We always wrap our connection code in a `try...catch` block to handle errors gracefully and prevent our app from crashing."
 
 Meaning of Key Terms:
-
 1. `async` (Asynchronous): Tells JS that a function will handle tasks that take time (like talking to a database) so it doesn't freeze/block the rest of the app.
 2. `await`: Pauses the execution inside an _async function_ until the slow task (like a database response) finishes.
 3. `try`: A block of code where you _attempt_ to run risky operations (like connecting to a remote database).
@@ -101,12 +86,10 @@ Meaning of Key Terms:
 It is a function that runs the exact moment it is defined, without needing to be called manually. In backend development, it is often used to connect to the database as soon as the application starts.
 
 Key Things to Remember about `IIFEs`:
-
 1. Semicolon `;` at the start: Prevents JavaScript parsing errors (Automatic Semicolon Insertion bugs) if the previous line lacks a semicolon.
 2. Execution parentheses `()` at the end: Immediately invokes/triggers the function upon definition.
 
 `Note`:
-
 - Whenever you are setting middleware or config settings, you are supposed to use `app.use()`.
 - `multer`: A third-part package used to configure file uploading.
 
@@ -131,7 +114,6 @@ e.g.: `app.use(express.json());`
 Operates at the Database layer. It sits right before or after a database action (like saving a user model).
 
 The Two Main Types of Hooks in Mongoose:
-
 1. `pre` hooks: Run before an action executes (e.g., _before_ a user document is saved to the database).
 2. `post` hooks: Run after an action finishes executing (e.g., _after_ a user is successfully deleted, you might want to log it or delete their uploaded files).
 
@@ -204,9 +186,7 @@ _asynchronous_ (programming which allows tasks to run in the background without 
 3. `apiResponse.js`: Similar to the error handler, this class ensures that every successful response follows the exact same structure. It bundles the `statusCode`, `data`, and `message` into a consistent format with a `success: true` flag. This makes it much easier for the frontend to reliably consume data from your API.
 
 `Note`:
-
 > mongoose-aggregate-paginate-v2
-
 - `Aggregate (Aggregation)`
   ➡️ What it means: Asking MongoDB to process your data through a pipeline of multiple steps (like a factory assembly line).
   ➡️ Example: Instead of just grabbing a raw list of users, an aggregation query might:
@@ -223,17 +203,14 @@ Putting Them Together:
 `Aggregate pagination` splits the results of a complex MongoDB aggregation pipeline (multi-stage queries involving filtering, joining collections, or computing stats) into manageable, numbered pages (e.g., page 1, page 2) while automatically calculating total document counts and page navigation metadata.
 
 > bcrypt (Password Hashing Library)
-
 - What it is: A library designed to securely _hash_ (transform input data like a password into a fixed length, unreadbale string that can't be reversed back to the original text) and compare passwords before saving them to your database.
 - Why it’s used: It converts plaintext passwords into unreadable strings with a random "salt" (random string of data added to a password before it is hashed) to protect against brute-force attacks.
 
 > jwt / jsonwebtoken (Authentication Token)
-
 - What it is: A standard (JSON Web Token) used to securely transmit information between the client and the server as a compact, signed object.
 - Why it’s used: HTTP is a "stateless" protocol, meaning the server forgets who a user is after every request. When a user successfully logs in, your server creates a JWT (signed with a secret key) and sends it back to the client. For all future requests (like uploading a video or viewing a profile), the client sends that token back, proving they are logged in without needing to send their username and password over and over again.
 
 > Note:
-
 - `Cloudinary`: A cloud-based service for uploading, storing, managing, and optimizing media assets like images and videos.
 
 - `Multer`: an Express Middleware
@@ -242,12 +219,10 @@ Putting Them Together:
 2. _Why it’s used_: Express cannot handle file uploads by default (`express.json()` only handles text/JSON). When a user uploads an avatar or a video, Multer intercepts the request, grabs the file, temporarily stores it on your server's disk (or in memory), and makes it accessible via `req.file` or `req.files` so your controller can process or forward it to Cloudinary.
 
 - `express-fileupload`: an Express Middleware
-
 1. _What it is_: An alternative Express middleware used for handling file uploads, serving the exact same core purpose as Multer.
 2. _Why it’s used_: Like Multer, it parses uploaded files from incoming requests and attaches them to `req.files`. Some developers prefer it because its configuration and syntax are often considered simpler and more "plug-and-play" than Multer, though Multer offers more advanced control over storage destinations and file filtering.
 
 > IMP NOTE:
-
 1. `parsing`: `Parsing` is the process of taking raw, unstructured data (like a raw string of text coming over the internet) and converting it into a structured, usable format (like a JavaScript object) that your code can easily read and manipulate.
    In Express, when a browser sends JSON text like `{"email":"test@test.com"}`, parsing turns that text into an actual JavaScript object (`{ email: "test@test.com" }`) so you can type `req.body.email`.
 
@@ -266,7 +241,6 @@ Putting Them Together:
 3. What `express.json()` handling text/JSON means: It reads incoming HTTP requests with a `Content-Type` header of `application/JSON` (containing text strings formatted as JSON) and converts them into JavaScript objects on `req.body`. It cannot process binary data, non-JSON text, or multipart form-data (file uploads).
 
 4. `fs` (File System):
-
 - A built-in Node.js core module that allows your application to interact with your operating system's file system (allowing you to read, write, update, and delete files directly on your server's disk).
 - Why it matters in your project:
   When using a tool like `multer` to handle uploads, files are often saved to a temporary local folder on your server first. Once your server successfully uploads that file to Cloudinary, you use the `fs` module to delete the temporary file from your local machine so your server's storage doesn't fill up with junk data.
@@ -280,7 +254,6 @@ Putting Them Together:
 - Disk Storage (`diskStorage`): Saves files temporarily to your server's hard drive/SSD (e.g., ./`public/temp`). It is safe for large files, protects server RAM, and lets you easily upload to Cloudinary before cleaning up.
 
 2. `fieldname` vs. `originalname`
-
 - `fieldname`:
   - The name of the HTML form input field specified on the frontend (e.g., <input type="file" name="avatar" /> has a fieldname of "avatar").
   - It tells your backend code which input field the file came from. This is crucial when a form handles multiple different files at once (e.g., one field named `avatar` and another named `coverImage`).
@@ -312,3 +285,56 @@ Summary:
 - Use `file.path` to send the file to Cloudinary.
 - Use `file.originalname` if you need to know or log the user's original file name.
 - Use `file.fieldname` if you need to check which form input field submitted the file.
+
+> Note: 
+1. *`HTTPS`* is always preferred over HTTP for any modern application or website.
+While `HTTP` is the *underlying protocol* for text transfer, the "S" in HTTPS stands for "Secure." It adds a *layer of encryption* that is non-negotiable for protecting user privacy and maintaining professional standards.
+  - `Underlying Protocol`: The foundational set of rules and standards that governs how data is transmitted between a client (browser) and a server.
+  Simply, think of it as a shared language (or rulebook) that allows client and server to exchange data reliably and consistently over the internet.
+  - `Encryption`: The process of converting readable data into an unreadable, secure code using mathematical algorithms so that only authorized parties can decode and read it using the correct 'key'.
+  In short, its the act of turning your data into a secret code.
+
+2. *`HTTP headers`* act as *metadata* (data describing the content in an HTTP request or response). They use key-value pairs to provide essential context for how messages are processed.
+
+Key Characteristics:
+- Structure: Organized as key-value pairs (e.g., Name: Value).
+- Scope: Used in both client requests and server responses.
+- Functionality: Vital for caching, authentication, state management, and defining data representation (encoding/compression).
+
+Commonly Used Headers:
+- `Accept`: Defines expected data formats.
+- `User-Agent`: Identifies the client/browser.
+- `Authorization`: Transmits security credentials (e.g., Bearer (JWT) tokens).
+- `Content-Type`: Specifies resource media type (JSON, images, etc.).
+- `Cookie`: Maintains state between client and server.
+- `Cache-Control`: Manages data expiration rules.
+
+3. *`HTTP methods`* define basic set of operations that can be used to interact with the server *or* actions a client performs on a server:
+- `GET`: Retrieves/fetches data from the server.
+- `POST`: Sends data to create a new resource.
+- `PUT`: Replaces an existing resource entirely.
+- `PATCH`: Updates only specific parts of an existing resource.
+- `DELETE`: Removes a specific resource.
+- `HEAD`: Requests only the headers, excluding the response body.
+- `OPTIONS`: Lists the methods supported by a specific endpoint.
+- `TRACE`: Performs a loop-back test for debugging network paths.
+
+4. *`HTTP status codes`* indicate the result of a client's request to a server, categorized by the first digit:
+  - `1xx (Informational)`: The request was received and the process is continuing.
+  - `2xx (Success)`: The request was successfully received, understood, and accepted.
+    - 200: Standard success (OK).
+    - 201: A resource was successfully created.
+    - 202: The request was accepted for processing, but not yet completed.
+  - `3xx (Redirection)`: Further action needs to be taken to complete the request, such as moving a resource to a new location.
+    - 307/308: Used for temporary or permanent redirection.
+  - `4xx (Client Error)`: The request contains bad syntax or cannot be fulfilled due to client-side issues.
+    - 400: Bad request (general client error).
+    - 401: Unauthorized (authentication is required or failed).
+    - 402: Payment required.
+    - 404: Not found (the requested resource does not exist).
+  - `5xx (Server Error)`: The server failed to fulfill an apparently valid request.
+    - 500: Internal server error.
+    - 503/504: Issues like server overload or gateway timeouts.
+
+
+
