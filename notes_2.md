@@ -170,8 +170,8 @@ class Car {
   }
 }
 
-const myCar = new Car("Toyota", "red") // constructor runs here
-console.log(myCar.brand) // output: Toyota
+const myCar = new Car("toyota", "red") // constructor runs here
+console.log(myCar.brand) // output: toyota
 console.log(myCar.color) // output: red
 
 `Note`: We have created the following files in `utils folder` of our project because it standardizes and professionalizes the backend development process.
@@ -315,17 +315,40 @@ Commonly Used Headers:
 4. *`HTTP status codes`* indicate the result of a client's request to a server, categorized by the first digit:
   - `1xx (Informational)`: The request was received and the process is continuing.
   - `2xx (Success)`: The request was successfully received, understood, and accepted.
-    - 200: Standard success (OK).
-    - 201: A resource was successfully created.
-    - 202: The request was accepted for processing, but not yet completed.
+    - `200`: Standard success (OK).
+    - `201`: A resource was successfully created.
+    - `202`: The request was accepted for processing, but not yet completed.
   - `3xx (Redirection)`: Further action needs to be taken to complete the request, such as moving a resource to a new location.
-    - 307/308: Used for temporary or permanent redirection.
+    - `307/308`: Used for temporary or permanent redirection.
   - `4xx (Client Error)`: The request contains bad syntax or cannot be fulfilled due to client-side issues.
-    - 400: Bad request (general client error).
-    - 401: Unauthorized (authentication is required or failed).
-    - 402: Payment required.
-    - 404: Not found (the requested resource does not exist).
+    - `400`: Bad request (general client error).
+    - `401`: Unauthorized (authentication is required or failed).
+    - `402`: Payment required.
+    - `404`: Not found (the requested resource does not exist).
   - `5xx (Server Error)`: The server failed to fulfill an apparently valid request.
-    - 500: Internal server error.
-    - 503/504: Issues like server overload or gateway timeouts.
+    - `500`: Internal server error.
+    - `503/504`: Issues like server overload or gateway timeouts.
+
+> Identifying, Understanding and Resolving Errors in Backend:
+The 3-Step Reading Strategy:
+When your terminal explodes with red text, don't panic. Follow these three steps:
+1. Find your file first:
+    Ignore the internal Node.js core files at the top of the trace (like node:internal/modules/...). Scan down until you see your project file path (e.g., src/routes/user.routes.js). That is where your code triggered the crash.
+2. Look at the line number:
+    Most traces include a line number (e.g., :272 or on line 14). Open your code editor, jump straight to that file and line, and look at what you wrote.
+3. Match the symptom:
+    - `ERR_MODULE_NOT_FOUND` ➡️ You misspelled a file path, forgot a `../`, or left off the `.js` extension.
+    - `TypeError`: *X is not a function* ➡️ You tried to call something as a function that wasn't exported correctly or is `undefined`.
+    You tried to perform an operation on the wrong data type (like calling a function that doesn't exist).
+    - `MongoServerError` ➡️ Your database connection string is wrong, or your MongoDB cluster is rejecting your IP/credentials.
+    - `ReferenceError` ➡️ You tried to access a variable, constant, or function name that has not been declared, is out of scope, or has not been initialized yet in the current execution context (such as misspelling a variable name or trying to use an identifier before it exists). 
+
+The Symbols Explained:
+1. **`./ (Current Directory)`**:
+  - Tells Node.js to look inside the exact same folder where your current file is sitting.
+  - Example: If you are inside `src/app.js` and want to import a file inside `src/constants.js`, you write `./constants.js.`
+2. **`../ (Parent Directory / Stepping Up)`**:
+  - Tells Node.js to step one level up out of the current folder into its parent directory.
+  - Example: If you are inside `src/routes/user.routes.js` and your controller is in `src/controllers/user.controller.js`, you need to use **`../`** to exit the routes folder first, and then go into `controllers/`. That gives you `../controllers/user.controller.js`.
+  Multiple levels: You can chain them `../../` steps up two levels.
 
