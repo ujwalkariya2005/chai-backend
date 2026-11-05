@@ -24,8 +24,12 @@ in dev: after nodemon write `-r dotenv/config --experimental-json-modules` */
 // imports db connection func to connect to mongodb
 import connectDB from "./db/index.js"
 
+import { app } from "./app.js"
+
 // invokes (or executes or triggers) the function to establish the database connection
-connectDB()
+connectDB({
+    
+})
 
 .then(() => { // handles successful db connection & starts express server
 

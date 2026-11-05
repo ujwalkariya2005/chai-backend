@@ -1,12 +1,13 @@
 // approach 1: using promise (reject, resolve)
 
-const asyncHandler = (requestHandler) => { // higher-order function that accepts a request handler function
+const asyncHandler = (requestHandler) => {
+  // higher-order function that accepts a request handler function
 
-    // defines inner middleware function taking express request, response, and next objects
-    (req, res, next) => { 
-        // executes request handler inside a promise and forwards any errors to express next middleware
-        Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err)) 
-    } // closes inner function
+  // explicitly returns inner middleware function taking express request, response, and next objects
+  return (req, res, next) => {
+    // executes request handler inside a promise and forwards any errors to express next middleware
+    Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err))
+  } // closes inner function
 } // closes asyncHandler wrapper
 
 // exports the utility function for use across project routes

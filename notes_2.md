@@ -346,9 +346,12 @@ When your terminal explodes with red text, don't panic. Follow these three steps
 The Symbols Explained:
 1. **`./ (Current Directory)`**:
   - Tells Node.js to look inside the exact same folder where your current file is sitting.
-  - Example: If you are inside `src/app.js` and want to import a file inside `src/constants.js`, you write `./constants.js.`
+  - Example: If you are writing your main entry point inside `src/index.js` and you want to import your Express app configuration from `src/app.js` (which sits right next to it in the exact same `src/` folder), you start with **`./`** to look in the current folder
 2. **`../ (Parent Directory / Stepping Up)`**:
   - Tells Node.js to step one level up out of the current folder into its parent directory.
   - Example: If you are inside `src/routes/user.routes.js` and your controller is in `src/controllers/user.controller.js`, you need to use **`../`** to exit the routes folder first, and then go into `controllers/`. That gives you `../controllers/user.controller.js`.
   Multiple levels: You can chain them `../../` steps up two levels.
+
+> Note: 
+`API versioning` is the practice of managing changes to an Application Programming Interface by releasing distinct versions (e.g., `/api/v1/` vs `/api/v2/`). This allows developers to introduce updates, modifications, or breaking changes without disrupting existing client applications that rely on older versions.
 
