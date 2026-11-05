@@ -62,7 +62,6 @@ What is a `MongoDB Connection String/URI (Uniform Resource Identifier)`?
 
 Breaking Down The Connection String:
 > mongodb+srv://ujwal:ujwal123@cluster0.nnpq6bq.mongodb.net/
-
 1. `mongodb+srv://`: The secure protocol used to connect to a cloud-based MongoDB cluster.
 2. `ujwal:ujwal123`: Your database username and password (separated by a colon).
 3. `cluster0.nnpq6bq.mongodb.net`: The unique domain address of your cloud database server hosted on MongoDB Atlas.
@@ -82,7 +81,7 @@ Meaning of Key Terms:
 5. `resolve`: A promise method used to say: _"The task was successful, here is the data."_
 6. `reject`: A promise method used to say: _"The task failed, here is the error."_
 
-`an IIFE (Immediately Invoked Function Expression)`:
+`IIFE (Immediately Invoked Function Expression)`:
 It is a function that runs the exact moment it is defined, without needing to be called manually. In backend development, it is often used to connect to the database as soon as the application starts.
 
 Key Things to Remember about `IIFEs`:
@@ -94,8 +93,7 @@ Key Things to Remember about `IIFEs`:
 - `multer`: A third-part package used to configure file uploading.
 
 > What is `Express Middleware`?
-> ℹ️ Convention: Call Express Middleware -> Middleware ONLY
-
+ℹ️ Convention: Call `Express Middleware` -> `Middleware` ONLY
 - _Simple Analogy_: Think of middleware like a security checkpoint or airport customs guard. When you want to enter a building or country (the route handler), you first have to pass through security. Security checks your bag, takes away anything dangerous, and only lets you through if everything looks good.
 - _Simple Definition_: `Express Middleware` is a function that sits in the middle of the request-response cycle. It intercepts incoming client requests before they reach your route code, allowing you to inspect, modify, or block them.
   Operates at the HTTP layer. It sits between the client request and your route controller.
@@ -106,8 +104,7 @@ e.g.: `app.use(express.json());`
   Express cannot read raw JSON strings by default. `express.json()` is a built-in middleware that intercepts the request, parses that raw JSON string into a usable JavaScript object, and attaches it to `req.body` so your controllers can actually read it.
 
 > What are `Mongoose Middlewares (Hooks)`?
-> ℹ️ Convention: Call Mongoose Middlewares -> Hooks ONLY
-
+ℹ️ Convention: Call `Mongoose Middlewares` -> `Hooks` ONLY
 - Calling Mongoose hooks "middleware" is technically correct because they intercept the database operation lifecycle, but calling them "hooks" helps developers instantly know you are talking about Mongoose schemas rather than Express servers.
 
 `Mongoose Middlewares (Hooks)` are functions that allow you to run custom code automatically before or after a specific database operation happens (such as saving, updating, or deleting a document).
@@ -164,22 +161,21 @@ const myPrinter = createPrinter() // calls outer function, stores returned funct
 myPrinter() // executes the returned inner function
 
 > What is a `Constructor`?
-> A `constructor` is a special method inside a class that automatically runs the exact moment a new object is created from that class.
-> e.g.:
-> class Car {
-> constructor(brand, color) { // runs automatically when _new Car()_ is called
-> this.brand = brand // sets the object's brand property
-> this.color = color // sets the object's color property
-> }
-> }
+A `constructor` is a special method inside a class that automatically runs the exact moment a new object is created from that class.
+e.g.:
+class Car {
+  constructor(brand, color) { // runs automatically when _new Car()_ is called
+    this.brand = brand // sets the object's brand property
+    this.color = color // sets the object's color property
+  }
+}
 
 const myCar = new Car("Toyota", "red") // constructor runs here
 console.log(myCar.brand) // output: Toyota
 console.log(myCar.color) // output: red
 
 `Note`: We have created the following files in `utils folder` of our project because it standardizes and professionalizes the backend development process.
-
-_asynchronous_ (programming which allows tasks to run in the background without blocking the rest of the application; instead of waiting for a long-running process like db query to finish, the program continues to execute other codes and handles the reuslts once it's ready)
+*asynchronous* (programming which allows tasks to run in the background without blocking the rest of the application; instead of waiting for a long-running process like db query to finish, the program continues to execute other codes and handles the reuslts once it's ready)
 
 1. `asyncHandler.js`: Database operations are _asynchronous_ and require `try-catch` blocks to handle errors. This utility acts as a wrapper function (a higher-order function). Instead of writing repetitive `try-catch` logic in every controller, you simply wrap your function in this utility. It makes your code cleaner and prevents bugs.
 2. `apiError.js`: This defines a custom class that extends the standard JavaScript Error class. It allows you to create structured error objects. By using this, every error sent to the client includes essential information like a statusCode, message, and a success: false flag in a uniform format.
@@ -214,7 +210,6 @@ Putting Them Together:
 - `Cloudinary`: A cloud-based service for uploading, storing, managing, and optimizing media assets like images and videos.
 
 - `Multer`: an Express Middleware
-
 1. _What it is_: A popular Node.js middleware designed specifically for handling multipart/form-data (the format used when users upload files through a form).
 2. _Why it’s used_: Express cannot handle file uploads by default (`express.json()` only handles text/JSON). When a user uploads an avatar or a video, Multer intercepts the request, grabs the file, temporarily stores it on your server's disk (or in memory), and makes it accessible via `req.file` or `req.files` so your controller can process or forward it to Cloudinary.
 
@@ -247,9 +242,7 @@ Putting Them Together:
 - Delete files (`fs.unlink` or `fs.unlinkSync`).
 
 > Note:
-
 1. `Disk Storage` vs. `Memory Storage`
-
 - Memory Storage (`memoryStorage`): Stores files as raw buffers inside your server's RAM (main memory). It is fast, but handling large files (like videos) will quickly exhaust your RAM and crash your server.
 - Disk Storage (`diskStorage`): Saves files temporarily to your server's hard drive/SSD (e.g., ./`public/temp`). It is safe for large files, protects server RAM, and lets you easily upload to Cloudinary before cleaning up.
 
@@ -289,10 +282,10 @@ Summary:
 > Note: 
 1. *`HTTPS`* is always preferred over HTTP for any modern application or website.
 While `HTTP` is the *underlying protocol* for text transfer, the "S" in HTTPS stands for "Secure." It adds a *layer of encryption* that is non-negotiable for protecting user privacy and maintaining professional standards.
-  - `Underlying Protocol`: The foundational set of rules and standards that governs how data is transmitted between a client (browser) and a server.
+  - *Underlying Protocol*: The foundational set of rules and standards that governs how data is transmitted between a client (browser) and a server.
   Simply, think of it as a shared language (or rulebook) that allows client and server to exchange data reliably and consistently over the internet.
-  - `Encryption`: The process of converting readable data into an unreadable, secure code using mathematical algorithms so that only authorized parties can decode and read it using the correct 'key'.
-  In short, its the act of turning your data into a secret code.
+  - *Encryption*: The process of converting readable data into an unreadable, secure code using mathematical algorithms so that only authorized parties can decode and read it using the correct 'key'.
+  In short, it is the act of turning your data into a secret code.
 
 2. *`HTTP headers`* act as *metadata* (data describing the content in an HTTP request or response). They use key-value pairs to provide essential context for how messages are processed.
 
@@ -335,6 +328,4 @@ Commonly Used Headers:
   - `5xx (Server Error)`: The server failed to fulfill an apparently valid request.
     - 500: Internal server error.
     - 503/504: Issues like server overload or gateway timeouts.
-
-
 
