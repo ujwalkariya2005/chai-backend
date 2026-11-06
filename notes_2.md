@@ -355,3 +355,16 @@ The Symbols Explained:
 > Note: 
 `API versioning` is the practice of managing changes to an Application Programming Interface by releasing distinct versions (e.g., `/api/v1/` vs `/api/v2/`). This allows developers to introduce updates, modifications, or breaking changes without disrupting existing client applications that rely on older versions.
 
+- *data integrity* (data remains accurate, consistent, and reliable by preventing duplicate entries and verifying that only valid information is saved to the database)
+
+> Note: Register Controller
+To build a backend user registration system, follow these steps:
+1. `Data Collection`: Retrieve/Fetch/Get user details from the request body to obtain the information needed for account creation.
+2. `Input Validation`: Ensure all required fields are present and valid to prevent corrupt or incomplete data from reaching the database.
+3. `Duplicate Check`: Verify if the user already exists to maintain *data integrity* and prevent multiple accounts for the same identity. 
+4. `File Handling`: If the registration includes profile images, use middleware to temporarily save files locally on the server. This creates a stable path required to stream and transfer the files to external cloud storage (like *Cloudinary*), after which the local copies should be deleted to free up server space. 
+5. `Cloud Upload`: Transfer image files to a cloud service like *Cloudinary* to obtain secure, accessible URLs for user profiles.
+6. `Database Entry`: Create a new user object with input data and image URLs, then save it to the database to finalize the account registration.
+7. `Sanitize Response`: Once the user is successfully created, remove sensitive information like passwords before sending the response back to the client to ensure security. 
+8. `Error Handling`: Return clear error messages for failed steps or database issues to ensure the user receives clear and helpful feedback.
+
