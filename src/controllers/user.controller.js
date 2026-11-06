@@ -1,6 +1,17 @@
 // imports the asynchronous error handling utility wrapper, asyncHandler from utils folder
 import { asyncHandler } from "../utils/asyncHandler.js"
 
+// imports the custom error class for standardized error handling across the project, apiError from utils folder
+import { apiError } from "../utils/apiError.js"
+
+import { User } from "../model/user.model.js"
+
+import { upload } from "../middleware/multer.middleware.js";
+
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
+
+import { apiResponse } from "../utils/apiResponse.js";
+
 // defines the asynchronous user registration controller wrapped in asyncHandler for error handling
 const registerUser = asyncHandler ( async (req, res) => {
 
