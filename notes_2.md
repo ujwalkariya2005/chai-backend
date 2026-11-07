@@ -96,7 +96,7 @@ Key Things to Remember about `IIFEs`:
 ℹ️ Convention: Call `Express Middleware` -> `Middleware` ONLY
 - _Simple Analogy_: Think of middleware like a security checkpoint or airport customs guard. When you want to enter a building or country (the route handler), you first have to pass through security. Security checks your bag, takes away anything dangerous, and only lets you through if everything looks good.
 - _Simple Definition_: `Express Middleware` is a function that sits in the middle of the request-response cycle. It intercepts incoming client requests before they reach your route code, allowing you to inspect, modify, or block them.
-  Operates at the HTTP layer. It sits between the client request and your route controller.
+Operates at the HTTP layer. It sits between the client request and your route controller.
 
 e.g.: `app.use(express.json());`
 

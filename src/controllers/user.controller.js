@@ -20,13 +20,13 @@ import { apiResponse } from "../utils/apiResponse.js";
 const registerUser = asyncHandler(async (req, res) => {
     
     // extracts text fields from the incoming client request body
-    const { fullName, email, username, password } = req.body;
+    const { fullname, email, username, password } = req.body;
     
     // prints the user email to the console for tracking and debugging
     console.log("email: ", email);
 
     // checks if any required text field is missing, empty, or contains only whitespace
-    if ([fullName, email, username, password].some((field) => field?.trim() === "")) {
+    if ( [fullname, email, username, password].some((field) => field?.trim() === "") ) {
         
         // throws a 400 bad request error if any mandatory field is empty
         throw new apiError(400, "all fields are required")
@@ -39,15 +39,32 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // checks if an existing user record was found in the database
     if (existedUser) {
+        
         // throws a 409 conflict error to prevent duplicate user registrations
         throw new apiError(409, "user with username or email already exists");
     }
 
+    // logs the uploaded files object containing multer file metadata to the console for debugging
+    console.log(req.files);
+
+    /* approach 1: uses modern js optional chaining (?.) and array access approach */
     // retrieves or fetches the temporary local file path for the mandatory avatar upload from multer
     const avatarLocalPath = req.files?.avatar?.[0]?.path
     
     // retrieves or fetches the temporary local file path for the optional cover image upload from multer
     const coverImageLocalPath = req.files?.coverImage?.[0]?.path
+
+    /* approach 2: uses regular programming approach
+    // declares a variable to hold the local path for the optional cover image
+    let coverImageLocalPath
+
+    // explicitly validates every layer of the object and array structure before accessing properties
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+    
+        // extracts the temporary file path from the first element of the coverImage array
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
+    */
 
     // checks if the local avatar file path is missing from the request
     if (!avatarLocalPath) {
@@ -73,7 +90,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // creates a new user document in mongodb using the validated data and cloud asset urls
     const user = await User.create({
-        fullName, // assigns the user's full name matching schema requirements
+        fullname, // assigns the user's full name matching schema requirements
         avatar: avatar.url, // stores the secure cloud url returned by cloudinary
         coverImage: coverImage?.url || "", // stores the cover image url or defaults to an empty string
         email, // assigns the user's email address
