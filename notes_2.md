@@ -368,3 +368,18 @@ To build a backend user registration system, follow these steps:
 7. `Sanitize Response`: Once the user is successfully created, remove sensitive information like passwords before sending the response back to the client to ensure security. 
 8. `Error Handling`: Return clear error messages for failed steps or database issues to ensure the user receives clear and helpful feedback.
 
+> Note:
+1. Optional Chaining `(?.)` and Array Access Approach:
+If a client sends a request without a cover image (`req.files.coverImage` is *undefined*), standard dot notation like `req.files.coverImage[0].path` would instantly throw a fatal server crash: *TypeError: Cannot read properties of undefined (reading '0')*. The `?.` operator gracefully stops evaluation, returns *undefined* instead of crashing, and safely assigns it to `coverImageLocalPath`.
+- *e.g.*: 
+// retrieves the temporary local file path for the mandatory avatar upload from multer
+const avatarLocalPath = req.files?.avatar?.[0]?.path
+
+2. Regular Programming Approach:
+It explicitly validates every layer of the nested object structure using an `if` condition and `Array.isArray()`. This is an older, bulletproof enterprise pattern commonly used when working with unpredictable third-party middleware payloads to guarantee zero runtime exceptions.
+- *e.g.*:
+// explicitly checks if req.files exists, ensures coverImage is an array, and confirms at least one file element exists before extracting its path
+if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+    coverImageLocalPath = req.files.coverImage[0].path;
+}
+
