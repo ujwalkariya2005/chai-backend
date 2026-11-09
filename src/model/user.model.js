@@ -65,11 +65,11 @@ userSchema.pre("save", async function () {
     this.password = await bcrypt.hash(this.password, 10);
 });
 
-// custom instance method: compares an incoming login password with the database's hashed password
-userSchema.methods.isPasswordCorrect = async function (password) {
-
-    // bcrypt.compare returns true if the plaintext password matches the stored hash, otherwise false
-    return await bcrypt.compare(password, this.password)
+// define a custom instance method on the user schema to check if password is valid
+userSchema.methods.isPasswordValid = async function(password) {
+    
+    // compare the incoming plain-text password with the hashed password stored in the database
+    return await bcrypt.compare(password, this.password);
 }
 
 // custom instance method: generates a short-lived access token for secure API request authentication

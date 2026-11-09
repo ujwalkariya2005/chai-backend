@@ -7,18 +7,17 @@ import { apiError } from "../utils/apiError.js";
 // imports the mongoose user model interface for querying and creating user records in mongodb
 import { User } from "../model/user.model.js";
 
-// imports the multer middleware configuration for handling multipart form-data file uploads
-import { upload } from "../middleware/multer.middleware.js";
-
 // imports the cloudinary helper utility to stream local files to cloud storage
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 // imports the standardized api response formatter for uniform json output structures
 import { apiResponse } from "../utils/apiResponse.js";
 
+import jwt from "jsonwebtoken"
+
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
-        const user = await user.findById(userId)
+        const user = await User.findById(userId)
         const accessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken()
 
@@ -153,7 +152,7 @@ const loginUser = asyncHandler(async (req, res) => { // wrap controller in async
         throw new apiError(404, "user does not exist") // throw error if user is missing
     }
 
-    const isPasswordValid = await user.isPasswordValid(password) // compare entered password with hashed db password
+    const isPasswordValid = await user.isPasswordValid (password) // compare entered password with hashed db password
 
     if (!isPasswordValid) { // check if password validation failed
         throw new apiError(401, "invalid user credentials") // throw unauthorized error for incorrect password
@@ -188,7 +187,6 @@ const loginUser = asyncHandler(async (req, res) => { // wrap controller in async
             )
         )
 })
-
 
 // hint: check notes_2.md for logout controller steps
 // wrap controller with asynchandler to catch errors and manage asynchronous execution safely
@@ -227,9 +225,70 @@ const logoutUser = asyncHandler(async (req, res) => {
         )
 })
 
+// define an asynchronous controller to handle refreshing expired access tokens
+const refreshAccessToken = asyncHandler ( async (req, res) => {
+    
+    try {
+        // extract incoming refresh token from cookies or request body fallback
+        const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
+    
+        // throw an error if no refresh token was provided in the request
+        if ( !incomingRefreshToken ) {
+        throw new apiError(401, "unauthorized request")
+        }
+    
+        // verify the incoming refresh token against our secret key to decode payload data
+        const decodedToken = jwt.verify(
+            incomingRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        )
+    
+        // find the user in the database using the unique id extracted from the decoded token
+        const user = await User.findById(decodedToken?._id)
+    
+        // throw an error if no matching user record exists for this token id
+        if ( !user ) {
+            throw new apiError(401, "invalid refresh token")
+        }
+    
+        // ensure the incoming token matches the latest valid refresh token stored in the user document
+        if ( incomingRefreshToken !== user?.refreshToken ) {
+            throw new apiError(401, "refresh token is expired or used")
+        }
+    
+        // define security cookie options ensuring cookies are sent only over https and restricted from client-side scripts
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
+    
+        // generate a brand new pair of access and refresh tokens for the authenticated user session
+        const {accessToken, newRefreshToken} = await generateAccessAndRefreshTokens(user._id)
+    
+        // send a successful JSON response updating both token cookies and returning tokens in the response body
+        return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", newRefreshToken, options)
+        .json(
+            new apiResponse(
+                200,
+                {
+                    accessToken, refreshToken: newRefreshToken
+                },
+                "access token refreshed"
+            )
+        )
+    } catch (error) {
+        // catch any verification or database failures and throw a standardized unauthorized error response
+        throw new apiError(401, error?.message || "invalid refresh token")
+    }
+})
+
 // exports the controller functions so they can be linked inside user routes
 export{
     registerUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    refreshAccessToken
 }

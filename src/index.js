@@ -1,3 +1,14 @@
+/* ℹ️ src/index.js (The Application Entry Point):
+
+Role: This is the main starting point of your entire backend application. 
+When you run your app (via `npm run dev`), Node.js looks here first.
+
+Significance: It connects everything together. It loads your environment variables (`dotenv`), 
+connects to MongoDB by calling your database function, 
+imports your Express app from `app.js`, 
+and finally boots up the server using `app.listen()`.
+*/
+
 /*
 require("dotenv").config({
     path: "./env"
@@ -24,6 +35,7 @@ in dev: after nodemon write `-r dotenv/config --experimental-json-modules` */
 // imports db connection func to connect to mongodb
 import connectDB from "./db/index.js"
 
+// import the configured express application instance
 import { app } from "./app.js"
 
 // invokes (or executes or triggers) the function to establish the database connection

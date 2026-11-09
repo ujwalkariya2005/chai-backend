@@ -343,14 +343,35 @@ When your terminal explodes with red text, don't panic. Follow these three steps
     - `MongoServerError` ➡️ Your database connection string is wrong, or your MongoDB cluster is rejecting your IP/credentials.
     - `ReferenceError` ➡️ You tried to access a variable, constant, or function name that has not been declared, is out of scope, or has not been initialized yet in the current execution context (such as misspelling a variable name or trying to use an identifier before it exists). 
 
-The Symbols Explained:
+> Note: 
+1️⃣ `The Symbols Explained`:
 1. **`./ (Current Directory)`**:
   - Tells Node.js to look inside the exact same folder where your current file is sitting.
-  - Example: If you are writing your main entry point inside `src/index.js` and you want to import your Express app configuration from `src/app.js` (which sits right next to it in the exact same `src/` folder), you start with **`./`** to look in the current folder
+  - Example: If you are writing your main entry point inside `src/index.js` and you want to import your Express app configuration from `src/app.js` (which sits right next to it in the exact same `src/` folder), you start with **`./`** to look in the current folder. Looks like: `import { app } from "./app.js"`.
 2. **`../ (Parent Directory / Stepping Up)`**:
   - Tells Node.js to step one level up out of the current folder into its parent directory.
   - Example: If you are inside `src/routes/user.routes.js` and your controller is in `src/controllers/user.controller.js`, you need to use **`../`** to exit the routes folder first, and then go into `controllers/`. That gives you `../controllers/user.controller.js`.
-  Multiple levels: You can chain them `../../` steps up two levels.
+
+2️⃣ **`Named vs. Default Exports`**:
+1. *`Default Export`* (`import express from "express"`): You can do this directly because express itself is the main default thing exported.
+2. *`Named Export`* (`import { Router } from "express"`): `Router` is a specific tool inside Express. Because a file can have many named tools, you must wrap them in curly braces `{}` and use their exact name.
+
+Another scenario:
+`export default connectDB` vs. `export { connectDB }`
+Yes, you can write it as `export { connectDB }`, but it changes how you must import it later.
+The difference comes down to `Default` vs. `Named Exports`:
+1. *Current Way* (`export default connectDB`):
+This is a *`Default Export`*.
+How you import it: `import connectDB from "./db/index.js"` (NO Curly Braces, and you can actually name it whatever you want).
+2. *Alternative Way* (`export { connectDB }`):
+This is a *`Named Export`*.
+How you must import it: `import { connectDB } from "./db/index.js"` (Must Use Curly Braces `{}` and The Exact Name).
+
+*Best Practice*: Since `src/db/index.js` only exports one main database connection function, sticking to `export default connectDB is` standard and keeps your import clean.
+
+3️⃣ Decoding Import Paths and Curly Braces `{}`
+Why `import bcrypt from "bcrypt"` has no path?
+When you import an external package installed via npm, Node.js automatically looks inside your project's *node_modules* folder. You don't need `./` or paths because Node knows where to find installed packages by name.
 
 > Note: 
 `API versioning` is the practice of managing changes to an Application Programming Interface by releasing distinct versions (e.g., `/api/v1/` vs `/api/v2/`). This allows developers to introduce updates, modifications, or breaking changes without disrupting existing client applications that rely on older versions.
@@ -397,11 +418,10 @@ Separating core data (`payload`) from metadata and protocol rules ensures that r
 
 > Access Tokens vs. Refresh Tokens
 "We use a dual-token authentication strategy to balance security and user experience."
-1. Access Token:
+1. `Access Token`:
 - What it is: A short-lived credential (e.g., 15 minutes) sent with every API request to authorize access to protected routes.
 - Why it matters for security: If an access token is intercepted, the attacker's window of opportunity is extremely small before it expires.
-
-2. Refresh Token:
+2. `Refresh Token`:
 - What it is: A long-lived credential securely stored in the database.
 - Its purpose: It does not grant direct API access; its sole job is to allow the client to request a new access token when the old one expires, preventing the user from having to log in repeatedly.
 - How? *Short-lived*, `access tokens` minimize the exposure window if a token is intercepted, while `httpOnly cookies` and `database validation` protect the *long-lived*, `refresh token` from attackers—giving us maximum security without forcing the user to constantly retype their password. 

@@ -1,3 +1,11 @@
+/*
+The "app.js" file is the central configuration hub for your Express server.
+
+While your main entry point (src/index.js) is responsible for starting the server 
+and connecting to the database, "app.js" is responsible for setting up how the server 
+behaves before it starts listening for requests.
+*/
+
 import express from "express"
 // imports express framework to build web server
 

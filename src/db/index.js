@@ -1,4 +1,13 @@
-/* ℹ️ approach 2: mdoular separation approach or dedicated db module
+/* ℹ️ src/db/index.js (The Database Connection Module):
+
+Role: This file is solely responsible for establishing a connection to MongoDB using Mongoose.
+
+Significance: It encapsulates database logic so your main entry file doesn't get cluttered. 
+It handles connection strings, handles connection success/error events, 
+and gracefully manages asynchronous database startup.
+*/
+
+/* ℹ️ approach 2: modular separation approach or dedicated db module
 take a file separately in any folder (db, connection) and export from there
 import it into index.js file and then execute it */
 

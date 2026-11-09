@@ -1,15 +1,17 @@
 // imports the Router module from express to define modular route handlers
-import { Router } from "express";
+import { Router } from "express"
 
 // imports the registerUser controller function from the user controller file
-import { loginUser, logoutUser, registerUser } from "../controller/user.controller.js";
+import { loginUser, logoutUser, refreshAccessToken, registerUser } from "../controller/user.controller.js"
 
 // imports the multer upload middleware for handling multipart/form-data file uploads
-import { upload } from "../middleware/multer.middleware.js";
-import { verifyJWT } from "../middleware/authentication.middleware.js";
+import { upload } from "../middleware/multer.middleware.js"
+
+// import jwt verification middleware to protect and secure user routes
+import { verifyJWT } from "../middleware/authentication.middleware.js"
 
 // initializes an express router instance for managing user-related endpoints
-const router = Router();
+const router = Router()
 
 // defines the post route for user registration with multer middleware to handle avatar and cover image files
 router.route("/register").post(
@@ -30,11 +32,15 @@ router.route("/register").post(
 
 
 // define post route for user login and attach login controller function
-router.route("/login").post(loginUser)
+// upload.none() handles multipart/form-data with text fields only (no file uploads)
+router.route("/login").post(upload.none(), loginUser)
 
 // secured routes require authentication middleware to run before the controller
 // define post route for user logout protected by verifyjwt middleware
 router.route("/logout").post(verifyJWT, logoutUser) 
+
+// define a post route for refreshing user access tokens using an existing refresh token
+router.route("/refresh-token").post(refreshAccessToken)
 
 // exports the configured router instance as the default export for app linking in app.js
 export default router;
