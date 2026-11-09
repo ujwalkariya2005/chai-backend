@@ -72,32 +72,33 @@ userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password, this.password)
 }
 
-// custom instance method: generates a short-lived access token for authenticating api requests
+// custom instance method: generates a short-lived access token for secure API request authentication
 userSchema.methods.generateAccessToken = function(){
     return jwt.sign(
         {
-            // payload: data embedded inside the token payload
-            id: this._id,
+            // token payload: core user identification details embedded within the JWT
+            _id: this._id,
             email: this.email,
             username: this.username,
             fullname: this.fullname
         },
-        process.env.ACCESS_TOKEN_SECRET, // secret key used to digitally sign the token
+        process.env.ACCESS_TOKEN_SECRET, // secret key used to digitally sign and verify the access token
         {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRY // token lifespan (e.g., "15m")
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY // token lifespan configuration (e.g., "15m")
         }
     )
 }
 
-// custom instance method: generates a long-lived refresh token to maintain persistent login sessions
+// custom instance method: generates a long-lived refresh token to keep users logged in securely
 userSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
         {
-            id: this._id // refresh tokens typically contain minimal payload data for security
+            // token payload: minimal user identification required for refresh verification
+            _id: this._id
         },
-        process.env.REFRESH_TOKEN_SECRET, // separate secret key for refresh tokens
+        process.env.REFRESH_TOKEN_SECRET, // secure secret key reserved only for refresh tokens
         {
-            expiresIn: process.env.REFRESH_TOKEN_EXPIRY // longer lifespan (e.g., "7d")
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY // longer token lifespan configuration (e.g., "7d")
         }
     )
 }

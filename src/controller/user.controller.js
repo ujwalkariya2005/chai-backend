@@ -16,8 +16,25 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 // imports the standardized api response formatter for uniform json output structures
 import { apiResponse } from "../utils/apiResponse.js";
 
+const generateAccessAndRefreshTokens = async (userId) => {
+    try {
+        const user = await user.findById(userId)
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+
+        user.refreshToken = refreshToken
+        await user.save({ validateBeforeSave: false })
+
+        return { accessToken, refreshToken }
+    }
+    catch (error) {
+        throw new apiError(500, "something went wrong while generating refresh and access tokens")
+    }
+}
+
+// check notes_2.md for register controller steps
 // defines the asynchronous user registration controller wrapped in error handling logic
-const registerUser = asyncHandler(async (req, res) => {
+const registerUser = asyncHandler ( async (req, res) => {
     
     // extracts text fields from the incoming client request body
     const { fullname, email, username, password } = req.body;
@@ -115,7 +132,62 @@ const registerUser = asyncHandler(async (req, res) => {
     )
 })
 
-// exports the registerUser controller function so it can be mounted inside user routes
+// checck notes_2.md for login controller steps
+const loginUser = asyncHandler ( async (req, res) => {
+
+    const { email, username, password } = req.body
+
+    if ( !username || !email ) {
+        throw new apiError(400, "usernmae or emial is required")
+    }
+
+    /* methods like findOne & updateOne are available via mongoose, mongodb
+    however methods like isPasswordCorrect & generateAccessToken are available via user (we have taken it's instance from the db)
+    but not User (an object of mongoose, mongodb) */
+    const user = await User.findOne({
+        // $_ ➡️ mongodb operators
+        $or: [{username}, {email}]
+    })
+
+    if ( !user ) {
+        throw new apiError(404, "user doesn't exist")
+    }
+
+    const isPasswordValid = await user.isPasswordValid(password)
+
+    if ( !isPasswordValid ) {
+        throw new apiError(401, "invalid user credentials")
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
+
+    const loggedInUser = await User.findById(user._id)
+    select("-password -refreshToken")
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+    .status(200).cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+
+    .json(
+        new apiResponse(
+            200, {
+                user: loggedInUser, accessToken, refreshToken
+            },
+            "user logged in successfully"
+        )
+    )
+})
+
+const logoutUser = asyncHandler ( async (req, res) => {
+    
+})
+
+// exports the registerUser controller function so it can be linked inside user routes
 export{
     registerUser,
     loginUser

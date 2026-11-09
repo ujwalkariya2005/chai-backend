@@ -2,7 +2,7 @@
 import { Router } from "express";
 
 // imports the registerUser controller function from the user controller file
-import { registerUser } from "../controllers/user.controller.js";
+import { registerUser } from "../controller/user.controller.js";
 
 // imports the multer upload middleware for handling multipart/form-data file uploads
 import { upload } from "../middleware/multer.middleware.js";
