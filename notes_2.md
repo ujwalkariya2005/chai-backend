@@ -358,7 +358,7 @@ The Symbols Explained:
 - *data integrity* (data remains accurate, consistent, and reliable by preventing duplicate entries and verifying that only valid information is saved to the database)
 
 > Note: Register Controller
-To build a backend user registration system, follow these steps:
+This process focuses on the logic required to onboard a new user into the application. 
 1. `Data Collection`: Retrieve/Fetch/Get user details from the request body to obtain the information needed for account creation.
 2. `Input Validation`: Ensure all required fields are present and valid to prevent corrupt or incomplete data from reaching the database.
 3. `Duplicate Check`: Verify if the user already exists to maintain *data integrity* and prevent multiple accounts for the same identity. 
@@ -382,4 +382,35 @@ It explicitly validates every layer of the nested object structure using an `if`
 if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
     coverImageLocalPath = req.files.coverImage[0].path;
 }
+
+> Note:
+A `payload` is the actual data transmitted within a network packet, API request, or file, separate from metadata and like protocol rules.
+Separating core data (`payload`) from metadata and protocol rules ensures that routing, security, and delivery rules can be processed uniformly without needing to inspect or alter the underlying application data.
+- In API Requests (e.g., POST/PUT): The data sent from the client to the server (e.g., JSON objects containing user registration fields like `username` and `password`).
+- In JSON Web Tokens (JWT): The claims payload containing user data (`_id`, `email`, `username`) embedded inside the token.
+
+> Some cybersecurity terms:
+1. "Intercepted" means a hacker secretly catches or copies your data while it is traveling across the network.
+2. "Compromised" means security is broken; an unauthorized person now possesses your token, no matter how they got it. 
+
+> Access Tokens vs. Refresh Tokens
+"We use a dual-token authentication strategy to balance security and user experience."
+1. Access Token:
+- What it is: A short-lived credential (e.g., 15 minutes) sent with every API request to authorize access to protected routes.
+- Why it matters for security: If an access token is intercepted, the attacker's window of opportunity is extremely small before it expires.
+
+2. Refresh Token:
+- What it is: A long-lived credential securely stored in the database.
+- Its purpose: It does not grant direct API access; its sole job is to allow the client to request a new access token when the old one expires, preventing the user from having to log in repeatedly.
+- How? *Short-lived*, `access tokens` minimize the exposure window if a token is intercepted, while `httpOnly cookies` and `database validation` protect the *long-lived*, `refresh token` from attackers—giving us maximum security without forcing the user to constantly retype their password. 
+
+> Note: Login Controller
+This process focuses on validating credentials and issuing security tokens.
+1. *`Data Collection & Validation`*: Extract the necessary credentials (email or username and password) from the request body (`req.body`). If these fields are missing, return a client-side error to prevent invalid attempts. 
+2. *`User Retrieval`*: Search the database for the user using their email or username. Utilizing a database operator like `$or` allows for flexible login methods. If no user is found, return an error indicating the user does not exist.
+3. *`Credential Verification`*: Compare the submitted password against the user's stored hashed password using a custom method (e.g., `isPasswordCorrect`). If the password is incorrect, terminate the process and return an unauthorized error.
+4. *`Token Generation`*: Once the user is authenticated, use utility methods to generate both an Access Token (short-lived) and a Refresh Token (long-lived). These tokens facilitate secure API interactions. 
+5. *`Database & Session Management`*: Save the newly generated Refresh Token directly into the user document in the database to track sessions. When updating, ensure `validateBeforeSave` is set to `false` to avoid unnecessary schema checks.
+6. *`Secure Cookie Configuration`*: Send the tokens to the client as `HTTP-only`, secure cookies. This prevents client-side scripts from accessing them, significantly boosting security. 
+7. *`Response Sanitization`*: Return a success response to the client. Ensure the user object sent back is clean, meaning it excludes sensitive data like the password and the refresh token to enhance security and privacy.
 

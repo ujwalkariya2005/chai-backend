@@ -116,4 +116,7 @@ const registerUser = asyncHandler(async (req, res) => {
 })
 
 // exports the registerUser controller function so it can be mounted inside user routes
-export { registerUser };
+export{
+    registerUser,
+    loginUser
+}
