@@ -359,14 +359,15 @@ The Symbols Explained:
 
 > Note: Register Controller
 This process focuses on the logic required to onboard a new user into the application. 
-1. `Data Collection`: Retrieve/Fetch/Get user details from the request body to obtain the information needed for account creation.
-2. `Input Validation`: Ensure all required fields are present and valid to prevent corrupt or incomplete data from reaching the database.
-3. `Duplicate Check`: Verify if the user already exists to maintain *data integrity* and prevent multiple accounts for the same identity. 
-4. `File Handling`: If the registration includes profile images, use middleware to temporarily save files locally on the server. This creates a stable path required to stream and transfer the files to external cloud storage (like *Cloudinary*), after which the local copies should be deleted to free up server space. 
-5. `Cloud Upload`: Transfer image files to a cloud service like *Cloudinary* to obtain secure, accessible URLs for user profiles.
-6. `Database Entry`: Create a new user object with input data and image URLs, then save it to the database to finalize the account registration.
-7. `Sanitize Response`: Once the user is successfully created, remove sensitive information like passwords before sending the response back to the client to ensure security. 
-8. `Error Handling`: Return clear error messages for failed steps or database issues to ensure the user receives clear and helpful feedback.
+1. *`Data Collection`*: Retrieve/Fetch/Get user details from the *request body* to obtain the information needed for account creation. 
+2. *`Input Validation`*: Ensure all required fields are present and valid to prevent corrupt or incomplete data from reaching the database. This ensures only clean, complete data reaches your backend, preventing processing errors. 
+3. *`Duplicate Check`*: Search the database to verify if the user already exists (by email or username) to maintain *data integrity* and prevent multiple accounts for the same identity. 
+4. *`File Handling`*: If the registration includes profile images, use middleware (such as *Multer*) to temporarily save files locally on the server. This creates a stable, local file path required to stream and transfer the files to external cloud storage (like *Cloudinary*). 
+5. *`Cloud Upload`*: Transfer image files to a cloud service like *Cloudinary* to obtain secure, accessible URLs for user profiles. After this, the local copies should be deleted to free up server space. 
+To delete temporary files after they have been successfully uploaded to Cloudinary, you need to use the *Node.js fs (file system) module*. After the upload process completes, you can use the `fs.unlinkSync` method to remove the local file from your server. 
+6. *`Database Entry`*: Create a new user object (record) using the collected input data and the cloud-hosted image URLs, then save it to the database to finalize the record for account registration. 
+7. *`Sanitize Response`*: Once the user is successfully created, remove sensitive information like passwords and refresh tokens, before sending the response back to the client. This is a critical security practice to prevent data leakage. 
+8. *`Error Handling`*: Wrap the process in centralized error handling (here *apiError*). Return clear error messages for failed steps or database issues to ensure the user/client receives clear and helpful feedback. 
 
 > Note:
 1. Optional Chaining `(?.)` and Array Access Approach:
@@ -390,8 +391,9 @@ Separating core data (`payload`) from metadata and protocol rules ensures that r
 - In JSON Web Tokens (JWT): The claims payload containing user data (`_id`, `email`, `username`) embedded inside the token.
 
 > Some cybersecurity terms:
-1. "Intercepted" means a hacker secretly catches or copies your data while it is traveling across the network.
-2. "Compromised" means security is broken; an unauthorized person now possesses your token, no matter how they got it. 
+1. `Intercepted` means a hacker secretly catches or copies your data while it is traveling across the network.
+2. `Compromised` means security is broken; an unauthorized person now possesses your token, no matter how they got it. 
+3. `Cross-Site Scripting (XSS)` is a security flaw where attackers inject malicious code into trusted websites to steal user data or hijack active sessions.
 
 > Access Tokens vs. Refresh Tokens
 "We use a dual-token authentication strategy to balance security and user experience."
@@ -414,3 +416,16 @@ This process focuses on validating credentials and issuing security tokens.
 6. *`Secure Cookie Configuration`*: Send the tokens to the client as `HTTP-only`, secure cookies. This prevents client-side scripts from accessing them, significantly boosting security. 
 7. *`Response Sanitization`*: Return a success response to the client. Ensure the user object sent back is clean, meaning it excludes sensitive data like the password and the refresh token to enhance security and privacy.
 
+> Note: Logout Controller
+This process ensures the user session is securely terminated by clearing database references and client-side cookies.
+1.  *`Authentication Middleware`*: Ensure the route is protected by an authentication middleware. This middleware verifies the user's access token and injects the user's details (such as the `_id`) into the `req.user` object, making it accessible for the logout process.
+2.  *`Database Session Cleanup`*: Access the user document using the `_id` obtained from the request. Update the user's record in the database by setting the `refreshToken` field to `null` or an empty string, effectively invalidating the session on the server side.
+3.  *`Cookie Configuration`*: Define the cookie options (matching the ones used during login) to target the specific cookies stored on the client. These include `httpOnly: true` and `secure: true` to ensure the server correctly identifies and clears the stored tokens.
+4.  *`Token Revocation`*: Execute the `clearCookie` method on the response object for both the `accessToken` and `refreshToken` keys. This instructs the client's browser to remove these cookies, preventing further use of the session.
+5.  *`Response Finalization`*: Return a success response to the client confirming that the user has been logged out successfully. This completes the request-response cycle and ensures no lingering session data remains accessible.
+
+> Note: `User` vs. `user`
+- `User` (Uppercase): Refers to the Mongoose Model. 
+Use it to talk directly to the database collection (e.g., `User.findOne`, `User.findById`).
+- `user` (Lowercase): Refers to an individual document instance. 
+Use it after you have found a specific user in the database and want to run methods on that specific user (e.g., `user.isPasswordValid`, `user.generateAccessToken`).

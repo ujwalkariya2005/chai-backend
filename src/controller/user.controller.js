@@ -32,7 +32,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
     }
 }
 
-// check notes_2.md for register controller steps
+// hint: check notes_2.md for register controller steps
 // defines the asynchronous user registration controller wrapped in error handling logic
 const registerUser = asyncHandler ( async (req, res) => {
     
@@ -132,63 +132,104 @@ const registerUser = asyncHandler ( async (req, res) => {
     )
 })
 
-// checck notes_2.md for login controller steps
-const loginUser = asyncHandler ( async (req, res) => {
+// hint: check notes_2.md for login controller steps
+const loginUser = asyncHandler(async (req, res) => { // wrap controller in async handler to catch errors automatically
 
-    const { email, username, password } = req.body
+    const { email, username, password } = req.body // extract credentials from request body
 
-    if ( !username || !email ) {
-        throw new apiError(400, "usernmae or emial is required")
+    if (!username && !email) { // check if both username and email are missing
+        throw new apiError(400, "username or email is required") // throw error if identifiers are absent
+    }
+    if (!password) { // check if password field is empty
+        throw new apiError(400, "password is required") // throw error if password is missing
     }
 
-    /* methods like findOne & updateOne are available via mongoose, mongodb
-    however methods like isPasswordCorrect & generateAccessToken are available via user (we have taken it's instance from the db)
-    but not User (an object of mongoose, mongodb) */
-    const user = await User.findOne({
+    const user = await User.findOne({ // search database to find user document
         // $_ ➡️ mongodb operators
-        $or: [{username}, {email}]
+        $or: [{ username }, { email }] // match user by either username or email
     })
 
-    if ( !user ) {
-        throw new apiError(404, "user doesn't exist")
+    if (!user) { // check if user exists in database
+        throw new apiError(404, "user does not exist") // throw error if user is missing
     }
 
-    const isPasswordValid = await user.isPasswordValid(password)
+    const isPasswordValid = await user.isPasswordValid(password) // compare entered password with hashed db password
 
-    if ( !isPasswordValid ) {
-        throw new apiError(401, "invalid user credentials")
+    if (!isPasswordValid) { // check if password validation failed
+        throw new apiError(401, "invalid user credentials") // throw unauthorized error for incorrect password
     }
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
+    // generate short-lived access token and long-lived refresh token pair 
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id) 
 
-    const loggedInUser = await User.findById(user._id)
-    select("-password -refreshToken")
+    // fetch user record from db excluding sensitive fields
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken") 
 
-    const options = {
-        httpOnly: true,
-        secure: true
+    const options = { // define security configuration flags/constraints for cookies
+
+        httpOnly: true, // prevents XSS by blocking client-side script access
+        secure: true    // enforce https transmission for cookies
     }
 
+    // return response with the following methods
     return res
-    .status(200).cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
-
-    .json(
-        new apiResponse(
-            200, {
-                user: loggedInUser, accessToken, refreshToken
-            },
-            "user logged in successfully"
+        .status(200) // set successful http status code
+        .cookie("accessToken", accessToken, options) // set secure access token cookie
+        .cookie("refreshToken", refreshToken, options) // set secure refresh token cookie
+        .json(
+            new apiResponse( // wrap response in standardized api response structure
+                200, 
+                {
+                    user: loggedInUser, // attach sanitized user object
+                    accessToken,        // send access token in body
+                    refreshToken        // send refresh token in body
+                },
+                "user logged in successfully" // success message
+            )
         )
+})
+
+
+// hint: check notes_2.md for logout controller steps
+// wrap controller with asynchandler to catch errors and manage asynchronous execution safely
+const logoutUser = asyncHandler(async (req, res) => {
+
+    // search database to find and update user record using authenticated user id
+    await User.findByIdAndUpdate(
+        req.user._id, 
+        {
+            $set: {
+                refreshToken: null // remove refresh token from database so it cannot be used again
+            }
+        },
+        {
+            new: true // tell mongoose to return the updated user data
+        }
     )
+
+    // set cookie options so the browser knows which cookies to delete
+    const options = {
+        httpOnly: true, // prevents xss by blocking client-side script access
+        secure: true    // allow cookie only over https
+    }
+
+    // initiate response chain to set status, clear browser cookies, and return confirmation payload
+    return res
+        .status(200)
+        .clearCookie("accessToken", options) // instruct browser to clear access token cookie
+        .clearCookie("refreshToken", options) // instruct browser to clear refresh token cookie
+        .json(
+            new apiResponse(
+                200, 
+                {}, 
+                "user logged out"
+            )
+        )
 })
 
-const logoutUser = asyncHandler ( async (req, res) => {
-    
-})
-
-// exports the registerUser controller function so it can be linked inside user routes
+// exports the controller functions so they can be linked inside user routes
 export{
     registerUser,
-    loginUser
+    loginUser,
+    logoutUser
 }

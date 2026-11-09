@@ -2,10 +2,11 @@
 import { Router } from "express";
 
 // imports the registerUser controller function from the user controller file
-import { registerUser } from "../controller/user.controller.js";
+import { loginUser, logoutUser, registerUser } from "../controller/user.controller.js";
 
 // imports the multer upload middleware for handling multipart/form-data file uploads
 import { upload } from "../middleware/multer.middleware.js";
+import { verifyJWT } from "../middleware/authentication.middleware.js";
 
 // initializes an express router instance for managing user-related endpoints
 const router = Router();
@@ -26,6 +27,14 @@ router.route("/register").post(
 );
 
 // router.route("/login").post(loginUser); // placeholder for future login route implementation
+
+
+// define post route for user login and attach login controller function
+router.route("/login").post(loginUser)
+
+// secured routes require authentication middleware to run before the controller
+// define post route for user logout protected by verifyjwt middleware
+router.route("/logout").post(verifyJWT, logoutUser) 
 
 // exports the configured router instance as the default export for app linking in app.js
 export default router;
