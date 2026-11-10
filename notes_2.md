@@ -438,11 +438,11 @@ This process focuses on validating credentials and issuing security tokens.
 
 > Note: Logout Controller
 This process ensures the user session is securely terminated by clearing database references and client-side cookies.
-1.  *`Authentication Middleware`*: Ensure the route is protected by an authentication middleware. This middleware verifies the user's access token and injects the user's details (such as the `_id`) into the `req.user` object, making it accessible for the logout process.
-2.  *`Database Session Cleanup`*: Access the user document using the `_id` obtained from the request. Update the user's record in the database by setting the `refreshToken` field to `null` or an empty string, effectively invalidating the session on the server side.
-3.  *`Cookie Configuration`*: Define the cookie options (matching the ones used during login) to target the specific cookies stored on the client. These include `httpOnly: true` and `secure: true` to ensure the server correctly identifies and clears the stored tokens.
-4.  *`Token Revocation`*: Execute the `clearCookie` method on the response object for both the `accessToken` and `refreshToken` keys. This instructs the client's browser to remove these cookies, preventing further use of the session.
-5.  *`Response Finalization`*: Return a success response to the client confirming that the user has been logged out successfully. This completes the request-response cycle and ensures no lingering session data remains accessible.
+1. *`Authentication Middleware`*: Ensure the route is protected by an authentication middleware. This middleware verifies the user's access token and injects the user's details (such as the `_id`) into the `req.user` object, making it accessible for the logout process.
+2. *`Database Session Cleanup`*: Access the user document using the `_id` obtained from the request. Update the user's record in the database by setting the `refreshToken` field to `null` or an empty string, effectively invalidating the session on the server side.
+3. *`Cookie Configuration`*: Define the cookie options (matching the ones used during login) to target the specific cookies stored on the client. These include `httpOnly: true` and `secure: true` to ensure the server correctly identifies and clears the stored tokens.
+4. *`Token Revocation`*: Execute the `clearCookie` method on the response object for both the `accessToken` and `refreshToken` keys. This instructs the client's browser to remove these cookies, preventing further use of the session.
+5. *`Response Finalization`*: Return a success response to the client confirming that the user has been logged out successfully. This completes the request-response cycle and ensures no lingering session data remains accessible. 
 
 > Note: `User` vs. `user`
 - `User` (Uppercase): Refers to the Mongoose Model. 
@@ -461,4 +461,13 @@ Returns the document *after* the update is applied
 Old Syntax (Deprecated) ➡️ { new: false }
 New Modern Syntax ➡️ { returnDocument: 'before' }
 Returns the original document *before* the update
+
+> Subscription Schema Design Overview
+Why using a separate database model for subscriptions is better than storing them in an array within a User model? 
+- Why avoid arrays: Storing millions of subscriber IDs in one user document is inefficient. When a user has many subscribers, modifying that large list forces the database to do extra work, which slows things down.
+- `The Subscription model`: The system uses a dedicated model with two fields: Subscriber and Channel. Every time someone subscribes, a new document is created. This keeps each record small and ensures the system works well as it grows.
+- How data is found:
+1. To count a channel's subscribers, the system searches the Channel field and counts every document where that channel appears.
+2. To see which channels a user follows, the system searches the Subscriber field.
+- Simplicity: By treating both subscribers and channels as references to User IDs, the structure remains flexible and easy to query.
 
