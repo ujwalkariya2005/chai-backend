@@ -36,13 +36,13 @@ const generateAccessAndRefreshTokens = async (userId) => {
 const registerUser = asyncHandler ( async (req, res) => {
     
     // extracts text fields from the incoming client request body
-    const { fullname, email, username, password } = req.body;
+    const { fullName, email, username, password } = req.body;
     
     // prints the user email to the console for tracking and debugging
     console.log("email: ", email);
 
     // checks if any required text field is missing, empty, or contains only whitespace
-    if ( [fullname, email, username, password].some((field) => field?.trim() === "") ) {
+    if ( [fullName, email, username, password].some((field) => field?.trim() === "") ) {
         
         // throws a 400 bad request error if any mandatory field is empty
         throw new apiError(400, "all fields are required")
@@ -106,7 +106,7 @@ const registerUser = asyncHandler ( async (req, res) => {
 
     // creates a new user document in mongodb using the validated data and cloud asset urls
     const user = await User.create({
-        fullname, // assigns the user's full name matching schema requirements
+        fullName, // assigns the user's full name matching schema requirements
         avatar: avatar.url, // stores the secure cloud url returned by cloudinary
         coverImage: coverImage?.url || "", // stores the cover image url or defaults to an empty string
         email, // assigns the user's email address
@@ -152,9 +152,10 @@ const loginUser = asyncHandler(async (req, res) => { // wrap controller in async
         throw new apiError(404, "user does not exist") // throw error if user is missing
     }
 
-    const isPasswordValid = await user.isPasswordValid (password) // compare entered password with hashed db password
+    // compare entered password with hashed db password
+    const isPasswordCorrect = await user.isPasswordCorrect (password) 
 
-    if (!isPasswordValid) { // check if password validation failed
+    if (!isPasswordCorrect) { // check if password validation failed
         throw new apiError(401, "invalid user credentials") // throw unauthorized error for incorrect password
     }
 
@@ -188,20 +189,37 @@ const loginUser = asyncHandler(async (req, res) => { // wrap controller in async
         )
 })
 
-// hint: check notes_2.md for logout controller steps
 // wrap controller with asynchandler to catch errors and manage asynchronous execution safely
 const logoutUser = asyncHandler(async (req, res) => {
 
     // search database to find and update user record using authenticated user id
     await User.findByIdAndUpdate(
+        // pass the unique identifier of the currently logged-in user from the verified request object
         req.user._id, 
         {
+            // use MongoDB $set operator to target the refreshToken field
             $set: {
                 refreshToken: null // remove refresh token from database so it cannot be used again
             }
         },
         {
-            new: true // tell mongoose to return the updated user data
+            // use modern returnDocument configuration to return the updated user data
+            returnDocument: 'after' // before { new: true } but old
+
+            /* `{ new: true }` vs. `{ returnDocument: 'after' }`
+
+            Old Syntax (Deprecated) ➡️ { new: true }
+            New Modern Syntax ➡️ { returnDocument: 'after' }
+            Returns the document *after* the update is applied
+
+            Note: recent versions of Mongoose have deprecated the traditional 
+            { new: true } option inside methods like findOneAndUpdate() and findOneAndReplace() 
+            in favor of the MongoDB driver's standard nomenclature: returnDocument
+
+            Old Syntax (Deprecated) ➡️ { new: false }
+            New Modern Syntax ➡️ { returnDocument: 'before' }
+            Returns the original document *before* the update
+            */
         }
     )
 
@@ -213,26 +231,31 @@ const logoutUser = asyncHandler(async (req, res) => {
 
     // initiate response chain to set status, clear browser cookies, and return confirmation payload
     return res
-        .status(200)
-        .clearCookie("accessToken", options) // instruct browser to clear access token cookie
-        .clearCookie("refreshToken", options) // instruct browser to clear refresh token cookie
-        .json(
-            new apiResponse(
-                200, 
-                {}, 
-                "user logged out"
-            )
+    // set the HTTP response status code explicitly to 200 OK
+    .status(200)
+    // instruct browser to clear access token cookie using the defined security options
+    .clearCookie("accessToken", options) 
+    // instruct browser to clear refresh token cookie using the defined security options
+    .clearCookie("refreshToken", options) 
+    // send a standardized JSON response using the custom apiResponse wrapper
+    .json(
+        new apiResponse(
+            200, // set the status code metadata inside the custom apiResponse object
+            {}, // pass an empty data object since no user payload is needed upon logout
+            "user logged out" // provide a clear success message indicating the logout completed successfully
         )
+    )
 })
 
 // define an asynchronous controller to handle refreshing expired access tokens
 const refreshAccessToken = asyncHandler ( async (req, res) => {
     
+    // try block to catch any exceptions during token verification, database lookup, or token generation
     try {
         // extract incoming refresh token from cookies or request body fallback
         const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
     
-        // throw an error if no refresh token was provided in the request
+        // check if the incoming refresh token is missing; throw a 401 unauthorized error if not found
         if ( !incomingRefreshToken ) {
         throw new apiError(401, "unauthorized request")
         }
@@ -246,7 +269,7 @@ const refreshAccessToken = asyncHandler ( async (req, res) => {
         // find the user in the database using the unique id extracted from the decoded token
         const user = await User.findById(decodedToken?._id)
     
-        // throw an error if no matching user record exists for this token id
+        // check if no matching user record exists for this token id; throw a 401 unauthorized error if missing
         if ( !user ) {
             throw new apiError(401, "invalid refresh token")
         }
@@ -265,18 +288,22 @@ const refreshAccessToken = asyncHandler ( async (req, res) => {
         // generate a brand new pair of access and refresh tokens for the authenticated user session
         const {accessToken, newRefreshToken} = await generateAccessAndRefreshTokens(user._id)
     
-        // send a successful JSON response updating both token cookies and returning tokens in the response body
+        // initialize the HTTP response chain with a success status
         return res
+        // set the HTTP response status code explicitly to 200 OK
         .status(200)
+        // set the access token cookie using the defined security options
         .cookie("accessToken", accessToken, options)
+        // set the new refresh token cookie using the defined security options
         .cookie("refreshToken", newRefreshToken, options)
+        // send a successful JSON response using the custom apiResponse wrapper
         .json(
             new apiResponse(
-                200,
+                200, // set the status code metadata inside the custom apiResponse object
                 {
-                    accessToken, refreshToken: newRefreshToken
+                    accessToken, refreshToken: newRefreshToken // pass the newly generated tokens as the response data payload
                 },
-                "access token refreshed"
+                "access token refreshed" // provide a clear success message indicating the token refresh completed
             )
         )
     } catch (error) {
@@ -285,10 +312,205 @@ const refreshAccessToken = asyncHandler ( async (req, res) => {
     }
 })
 
+// define an asynchronous controller wrapped with asyncHandler to handle changing the user's password
+const changeCurrentPassword = asyncHandler ( async (req, res) => {
+    
+    // extract the old password and new password fields from the incoming request body
+    const { oldPassword, newPassword } = req.body
+
+    // fetch the user document from the database using the authenticated user's unique ID
+    const user = await User.findById(req.user?._id)
+
+    // invoke the custom schema method to verify if the provided old password matches the stored hash
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+
+    // check if the password verification failed; throw a 400 bad request error if the old password is incorrect
+    if ( !isPasswordCorrect ) {
+        throw new apiError(400, "invalid old password")
+    }
+
+    // assign the new plain-text password to the user document (which will trigger the pre-save hook to hash it securely)
+    user.password = newPassword
+
+    // save the updated user document to the database while bypassing schema validation checks
+    await user.save({ validateBeforeSave: false })
+
+    // initialize the HTTP response chain with a 200 OK status code
+    return res
+    // set the HTTP response status code explicitly to 200 OK
+    .status(200)
+    // send a standardized JSON response using the custom apiResponse wrapper
+    .json(
+        new apiResponse(
+            200, // set the status code metadata inside the custom apiResponse object
+            {}, // pass an empty data object since no user payload is needed upon password change
+            "password changed successfully" // provide a clear success message indicating the password update completed
+        )
+    )
+})
+
+// define an asynchronous controller wrapped with asyncHandler to fetch the currently authenticated user details
+const getCurrentUser = asyncHandler ( async (req, res) => {
+    
+    // initialize the HTTP response chain with a 200 OK status code
+    return res
+    // set the HTTP response status code explicitly
+    .status(200)
+    // send a standardized JSON response using the custom apiResponse wrapper containing the attached user data and success message
+    .json(
+        new apiResponse(
+            200,
+            req.user,
+            "current user fetched successfully"
+        )
+    )
+})
+
+// define an asynchronous controller wrapped with asyncHandler to handle updating user account details
+const updateAccountDetails = asyncHandler ( async (req, res) => {
+    
+    // extract fullName and email fields from the incoming request body
+    const { fullName, email } = req.body
+
+    // check if either fullName or email is missing; throw a 400 bad request error if any field is empty
+    if ( !fullName || !email ) {
+        throw new apiError(400, "all fields are required")
+    }
+
+    // query the database using the authenticated user's ID to find and update their account details
+    const user = await User.findByIdAndUpdate(
+        // pass the unique identifier of the currently logged-in user from the verified request object
+        req.user?._id,
+        {
+            // use MongoDB $set operator to update specific fields with the new values provided in the request body
+            $set: {
+                fullName,
+                email: email
+            }
+        },
+        // use modern returnDocument configuration to return the newly updated user document after modification
+        { returnDocument: 'after' }
+    // chain a mongoose query modifier to exclude the sensitive password field from the returned user object
+    ).select(" -password ")
+
+    // initialize the HTTP response chain with a 200 OK status code
+    return res
+    // set the HTTP response status code explicitly
+    .status(200)
+    // send a standardized JSON response using the custom apiResponse wrapper containing user data and success message
+    .json(
+        new apiResponse(
+            200,
+            user,
+            "account details updated successfully"
+        )
+    )
+})
+
+// define an asynchronous controller wrapped with asyncHandler to manage user avatar updates
+const updateUserAvatar = asyncHandler( async (req, res) => {
+
+    // extract the local file path of the uploaded avatar image from the request object populated by multer
+    const avatarLocalPath = req.file?.path
+
+    // check if the avatar local path exists; throw a 400 bad request error if it is missing
+    if ( !avatarLocalPath ) {
+        throw new apiError(400, "avatar file is missing")
+    }
+
+    // call the cloudinary utility helper to upload the local file and retrieve the response object
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+
+    // check if the uploaded cloudinary response contains a valid secure URL; throw an error if it failed
+    if ( !avatar.url ) {
+        throw new apiError(400, "error while uploading avatar")
+    }
+
+    // query the database using the authenticated user's ID to find and update their avatar record
+    const user = await User.findByIdAndUpdate(
+        // pass the unique identifier of the currently logged-in user from the verified request object
+        req.user?._id,
+        {
+            // use MongoDB $set operator to target and replace the existing avatar field value
+            $set: {
+                avatar: avatar.url
+            }
+        },
+        // use modern returnDocument configuration to return the newly updated user document after modification
+        { returnDocument: 'after' }
+    // chain a mongoose query modifier to exclude the sensitive password field from the returned user object
+    ).select(" -password ")
+
+    // initialize the HTTP response chain with a 200 OK status code
+    return res
+    // set the HTTP response status code explicitly
+    .status(200)
+    // send a standardized JSON response using the custom apiResponse wrapper containing user data and success message
+    .json(
+        new apiResponse(
+            200,
+            user,
+            "avatar updated successfully"
+        )
+    )
+})
+
+// define an asynchronous controller wrapped with asyncHandler to manage user cover image updates
+const updateUserCoverImage = asyncHandler( async (req, res) => {
+
+    // extract the local file path of the uploaded cover image from the request object populated by multer
+    const coverImageLocalPath = req.file?.path
+
+    // check if the cover image local path exists; throw a 400 bad request error if it is missing
+    if ( !coverImageLocalPath ) {
+        throw new apiError(400, "cover image file is missing")
+    }
+
+    // call the cloudinary utility helper to upload the local file and retrieve the response object
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+
+    // check if the uploaded cloudinary response contains a valid secure URL; throw an error if it failed
+    if ( !coverImage.url ) {
+        throw new apiError(400, "error while uploading cover image")
+    }
+
+    // query the database using the authenticated user's ID to find and update their cover image record
+    const user = await User.findByIdAndUpdate(
+        // pass the unique identifier of the currently logged-in user from the verified request object
+        req.user?._id,
+        {
+            // use MongoDB $set operator to target and replace the existing coverImage field value
+            $set: {
+                coverImage: coverImage.url
+            }
+        },
+        // use modern returnDocument configuration to return the newly updated user document after modification
+        { returnDocument: 'after' } // before: { new: true } but it's old now
+    // chain a mongoose query modifier to exclude the sensitive password field from the returned user object
+    ).select(" -password ")
+
+    // initialize the HTTP response chain with a 200 OK status code
+    return res
+    .status(200)
+    // send a standardized JSON response using the custom apiResponse wrapper containing user data and success message
+    .json(
+        new apiResponse(
+            200,
+            user,
+            "cover image updated successfully"
+        )
+    )
+})
+
 // exports the controller functions so they can be linked inside user routes
 export{
     registerUser,
     loginUser,
     logoutUser,
-    refreshAccessToken
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateAccountDetails,
+    updateUserAvatar,
+    updateUserCoverImage
 }

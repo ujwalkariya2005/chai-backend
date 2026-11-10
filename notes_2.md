@@ -449,3 +449,16 @@ This process ensures the user session is securely terminated by clearing databas
 Use it to talk directly to the database collection (e.g., `User.findOne`, `User.findById`).
 - `user` (Lowercase): Refers to an individual document instance. 
 Use it after you have found a specific user in the database and want to run methods on that specific user (e.g., `user.isPasswordValid`, `user.generateAccessToken`).
+
+
+> Note: `{ new: true }` vs. `{ returnDocument: 'after' }`
+Recent versions of Mongoose have deprecated the traditional `{ new: true }` option inside methods like `findOneAndUpdate()` and `findOneAndReplace()` in favor of the MongoDB driver's standard nomenclature: `returnDocument`.
+
+Old Syntax (Deprecated) ➡️ { new: true }
+New Modern Syntax ➡️ { returnDocument: 'after' }
+Returns the document *after* the update is applied
+
+Old Syntax (Deprecated) ➡️ { new: false }
+New Modern Syntax ➡️ { returnDocument: 'before' }
+Returns the original document *before* the update
+

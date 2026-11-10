@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
         lowercase: true,
         trim: true
     },
-    fullname: {
+    fullName: {
         type: String,
         required: true,
         trim: true,
@@ -65,8 +65,8 @@ userSchema.pre("save", async function () {
     this.password = await bcrypt.hash(this.password, 10);
 });
 
-// define a custom instance method on the user schema to check if password is valid
-userSchema.methods.isPasswordValid = async function(password) {
+// define a custom instance method on the user schema to check if password is correct
+userSchema.methods.isPasswordCorrect = async function(password) {
     
     // compare the incoming plain-text password with the hashed password stored in the database
     return await bcrypt.compare(password, this.password);
@@ -80,7 +80,7 @@ userSchema.methods.generateAccessToken = function(){
             _id: this._id,
             email: this.email,
             username: this.username,
-            fullname: this.fullname
+            fullName: this.fullName
         },
         process.env.ACCESS_TOKEN_SECRET, // secret key used to digitally sign and verify the access token
         {
