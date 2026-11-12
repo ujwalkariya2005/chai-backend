@@ -502,6 +502,109 @@ const updateUserCoverImage = asyncHandler( async (req, res) => {
     )
 })
 
+// define an asynchronous controller wrapped with asyncHandler to fetch a user channel profile using aggregation
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+    
+    // extract the username parameter from the incoming request URL path
+    const { username } = req.params
+
+    // validate that the username parameter exists and is not just empty whitespace
+    if (!username?.trim()) {
+        // throw a 400 bad request error if the username is missing or empty
+        throw new apiError(400, "username is missing")
+    }
+
+    // execute an aggregation pipeline on the User model to fetch profile stats and subscription metrics
+    const channel = await User.aggregate([
+        {
+            // stage 1: filter documents to find the specific user account matching the provided lowercase username
+            // $match: filters documents based on specific criteria (similar to a find query)
+            $match: {
+                username: username?.toLowerCase()
+            }
+        },
+        {
+            // stage 2: perform a left outer join with the subscriptions collection to fetch all subscribers for this channel
+            /* $lookup operator: it performs a left outer join with another collection 
+            OR say, it combines data from another collection (like joining tables in SQL) */
+            /* `left outer join`: (keeps all documents from the primary collection and attaches matching records from the target collection, 
+            or returns an empty array if no match is found) */
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            // stage 3: perform a second left outer join with the subscriptions collection to fetch all channels this user is subscribed to
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        },
+        {
+            // stage 4: introduce computed fields to calculate counts and check if the current user is subscribed
+            // $addFields operator to introduce new properties into the documents passing through the pipeline
+            $addFields: {
+                // calculate the total number of subscribers by getting the size of the subscribers array
+                subscribersCount: {
+                    $size: "$subscribers"
+                },
+                // calculate the total number of subscribed channels by getting the size of the subscribedTo array
+                channelsSubscribedToCount: {
+                    $size: "$subscribedTo"
+                },
+                // determine if the currently logged-in user is actively subscribed to this channel using a conditional expression
+                isSubscribed: {
+                    $cond: {
+                        // check if the current user's ID exists inside the subscriber field array of the subscribers lookup results
+                        if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+                        // return true if the user is found in the subscriber array
+                        then: true,
+                        // otherwise return false if the user is not subscribed
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            // stage 5: shapes the final output document by including or excluding specific fields for the client response
+            $project: {
+                fullName: 1,
+                username: 1,
+                subscribersCount: 1,
+                channelsSubscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+                email: 1
+            }
+        }
+    ])
+
+    // check if the aggregation result array is empty or undefined, meaning no matching user channel was found
+    if (!channel?.length) {
+        // throw a 404 not found error if the channel does not exist in the database
+        throw new apiError(404, "channel does not exist")
+    }
+
+    // initiate/start the HTTP response chain with a 200 OK status code
+    return res
+    // set the HTTP response status code explicitly to 200 OK
+    .status(200)
+    // send a standardized JSON response using the custom apiResponse wrapper containing the first profile object from the aggregation array
+    .json(
+        new apiResponse(
+            200, // set the status code metadata inside the custom apiResponse object
+            channel[0], // pass the aggregated user channel profile document
+            "user channel fetched successfully" // provide a clear success message indicating the channel data was retrieved
+        )
+    )
+})
+
 // exports the controller functions so they can be linked inside user routes
 export{
     registerUser,
@@ -512,5 +615,6 @@ export{
     getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
-    updateUserCoverImage
+    updateUserCoverImage,
+    getUserChannelProfile
 }
