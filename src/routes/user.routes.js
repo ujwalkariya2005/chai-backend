@@ -12,13 +12,13 @@ import { changeCurrentPassword,
     updateAccountDetails, 
     updateUserAvatar, 
     updateUserCoverImage 
-} from "../controller/user.controller.js"
+} from "../controllers/user.controllers.js"
 
 // imports the multer upload middleware for handling multipart/form-data file uploads
-import { upload } from "../middleware/multer.middleware.js"
+import { upload } from "../middlewares/multer.middleware.js"
 
 // import jwt verification middleware to protect and secure user routes
-import { verifyJWT } from "../middleware/authentication.middleware.js"
+import { verifyJWT } from "../middlewares/authentication.middleware.js"
 
 // initializes an express router instance for managing user-related endpoints
 const router = Router()

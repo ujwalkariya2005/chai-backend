@@ -8,7 +8,7 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import jwt from "jsonwebtoken"
 
 // import user mongoose model to interact with the user database collection
-import { User } from "../model/user.model.js"
+import { User } from "../models/user.model.js"
 
 /* since res wasn't being used it was replaced with _
 this is a production-grade practice too */

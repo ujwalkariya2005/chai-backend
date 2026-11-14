@@ -199,9 +199,15 @@ const logoutUser = asyncHandler(async (req, res) => {
         req.user._id, 
         {
             // use MongoDB $set operator to target the refreshToken field
-            $set: {
+            $set: { /* keeps the fields defined in the document, 
+                    preventing validation or query issues if mongoose schema expects the fields to exist */
                 refreshToken: null // remove refresh token from database so it cannot be used again
             }
+            /* OR use $unset to completely delete the field from the MongoDB document 
+            $unset: {
+            refreshToken: 1 // '1' is a required flag value telling MongoDB to drop the property entirely from the document
+            }
+            */
         },
         {
             // use modern returnDocument configuration to return the updated user data
