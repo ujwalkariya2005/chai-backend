@@ -5,7 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiError } from "../utils/apiError.js";
 
 // imports the mongoose user model interface for querying and creating user records in mongodb
-import { User } from "../model/user.model.js";
+import { User } from "../models/user.model.js";
 
 // imports the cloudinary helper utility to stream local files to cloud storage
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
@@ -14,6 +14,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
 
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
@@ -605,8 +606,82 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     )
 })
 
+// define an asynchronous controller wrapped with asyncHandler to automatically catch and handle errors for fetching watch history
+const getWatchHistory = asyncHandler(async (req, res) => {
+
+    // execute a MongoDB aggregation pipeline on the User model to fetch the authenticated user and their watch history
+    const user = await User.aggregate([
+        {
+            // match the user document using the authenticated user's ID converted to a Mongoose ObjectId
+            $match: {
+                _id: new mongoose.Types.ObjectId(req.user._id)
+            }
+        },
+        {
+            // perform a left outer join with the videos collection using the user's watchHistory array of video IDs
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                // define a nested pipeline inside the lookup stage to further process each video document
+                pipeline: [
+                    {
+                        // perform a nested left outer join with the users collection to fetch the owner details of each video
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            // project only specific safe fields from the owner user document
+                            pipeline: [
+                                {
+                                    $project: {
+                                        fullName: 1,
+                                        username: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        // add or overwrite fields in the video document to transform the owner array into a single object
+                        $addFields: {
+                            owner: {
+                                // extract the first element from the owner array using the $first accumulator operator
+                                $first: "$owner"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ])
+
+    // check if the aggregation result array is empty, meaning the user does not exist
+    if (!user?.length) {
+        // throw a 404 not found error if the user record could not be found
+        throw new apiError(404, "user does not exist")
+    }
+
+    // initiate the response chain to return the fetched watch history array
+    return res
+    // set the HTTP response status code explicitly to 200 OK
+    .status(200)
+    // send a standardized JSON response using the custom apiResponse wrapper
+    .json(
+        new apiResponse(
+            200,
+            // access the first element of the aggregation result and extract the populated watchHistory array
+            user[0].watchHistory,
+            "watch history fetched successfully"
+        )
+    )
+})
+
 // exports the controller functions so they can be linked inside user routes
-export{
+export {
     registerUser,
     loginUser,
     logoutUser,
@@ -616,5 +691,6 @@ export{
     updateAccountDetails,
     updateUserAvatar,
     updateUserCoverImage,
-    getUserChannelProfile
+    getUserChannelProfile,
+    getWatchHistory
 }

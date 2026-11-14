@@ -1,8 +1,18 @@
 // imports the Router module from express to define modular route handlers
 import { Router } from "express"
 
-// imports the registerUser controller function from the user controller file
-import { loginUser, logoutUser, refreshAccessToken, registerUser } from "../controller/user.controller.js"
+// imports the controller functions from the user controller file
+import { changeCurrentPassword, 
+    getCurrentUser, 
+    getUserChannelProfile, 
+    getWatchHistory, loginUser, 
+    logoutUser, 
+    refreshAccessToken, 
+    registerUser, 
+    updateAccountDetails, 
+    updateUserAvatar, 
+    updateUserCoverImage 
+} from "../controller/user.controller.js"
 
 // imports the multer upload middleware for handling multipart/form-data file uploads
 import { upload } from "../middleware/multer.middleware.js"
@@ -41,6 +51,29 @@ router.route("/logout").post(verifyJWT, logoutUser)
 
 // define a post route for refreshing user access tokens using an existing refresh token
 router.route("/refresh-token").post(refreshAccessToken)
+
+// import and configure routes with authentication middleware (verifyJWT) and file upload handlers (multer)
+
+// define a POST route for changing the user's password, protected by the verifyJWT authentication middleware
+router.route("/change-password").post(verifyJWT, changeCurrentPassword)
+
+// define a POST route to fetch the profile data of the currently logged-in user
+router.route("/current-user").post(verifyJWT, getCurrentUser)
+
+// define a PATCH route to update general account details (like name and email)
+router.route("/update-account").patch(verifyJWT, updateAccountDetails)
+
+// define a PATCH route to update the user avatar, using multer middleware to parse a single uploaded file from the 'avatar' field
+router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
+
+// define a PATCH route to update the user cover image, using multer middleware to parse a single uploaded file from the 'coverImage' field
+router.route("/cover-image").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage)
+
+// define a GET route with a dynamic namespace structure to fetch any user's public channel profile by username
+router.route("/c/:username").get(verifyJWT, getUserChannelProfile)
+
+// define a GET route to retrieve the authenticated user's watch history list (added the missing leading slash)
+router.route("/history").get(verifyJWT, getWatchHistory)
 
 // exports the configured router instance as the default export for app linking in app.js
 export default router;

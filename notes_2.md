@@ -516,3 +516,28 @@ This follows standard naming conventions for MongoDB collections to ensure:
 - *`Clarity`*: Plural names accurately reflect that a collection stores multiple documents rather than a single entity.
 Therefore, a model named Subscription is mapped to a collection named subscriptions in your database.
 
+> IMP NOTE:
+How to identify *`Route Parameters`* vs. *`Static Paths`* vs. *`Query Parameters`*?
+1. Type: *Static Path*
+How it looks in code / URL: Fixed strings like `/change-password` or `/history`
+Where it comes from / How to access it: Defined explicitly in the router string. Part of the URL route structure.
+Example: `req.url` / Route definition
+
+2. Type: *Route Parameters (Params)*
+How it looks in code / URL: Prefixed with a colon `:` like `:username` or `:id`
+Where it comes from / How to access it: Dynamic segments built right into the URL path.
+Example: `req.params.username`
+
+3. Type: *Query Parameters*
+How it looks in code / URL: Appended after a question mark `?` in the URL string
+Where it comes from / How to access it: Optional key-value pairs sent by the client. Not defined in the Express route path.
+Example: `req.query.page` (for /`history?page=2`)
+
+4. Why we use `/` in `router.route("")`?
+- The forward slash (`/`) represents the root path relative to the router's base mount point defined in the main app entry file (e.g., `/api/v1/users`).
+- Using `/` means the endpoint matches the exact base route (e.g., `/api/v1/users/`), whereas `/change-password` appends to it (resulting in `/api/v1/users/change-password`).
+
+5. Why we use `/c/:` for username params?
+- `/c/` acts as a static literal namespace prefix in the URL path (standing for "channel") to prevent route collisions with other potential routes like `/u/` or static keywords.
+- The colon (`:`) prefix tells Express that `username` is a dynamic route parameter, meaning anything passed in that position of the URL will be captured and made accessible inside `req.params.username`.
+
