@@ -1,8 +1,8 @@
 // import the mongoose library to handle MongoDB object modeling and database schemas
-import mongoose, { Schema } from "mongoose"
+import mongoose from "mongoose"
 
 // define a new Mongoose schema structure for managing user channel subscriptions
-const subscriptionSchema = new Schema({
+const subscriptionSchema = new mongoose.Schema({
 
     // define the subscriber field representing the user who is initiating the subscription
     subscriber: {
